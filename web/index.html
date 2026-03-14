@@ -12,46 +12,89 @@
 </head>
 <body>
     <div class="glass-bg"></div>
+    <div id="toast-container"></div>
+
     <nav>
         <div class="logo">STORAGE<span>1024</span></div>
-        <div class="nav-links">
-            <button id="create-project-btn" class="btn-primary">New Project</button>
+        <div id="nav-actions" class="nav-links">
+            <!-- Buttons dynamically inserted based on login state -->
         </div>
     </nav>
 
-    <main>
-        <header>
-            <h1>Welcome, <span id="user-name">Storage Master</span></h1>
-            <p>Your personal cloud storage powered by Telegram.</p>
-        </header>
+    <main id="main-content">
+        <!-- Landing / Login State -->
+        <section id="login-state" class="hero">
+            <h1>Your Private Data,<br>Gated & Secure.</h1>
+            <p>High-performance object storage for your next big project. Zero logs, zero limits, absolute privacy.</p>
+            
+            <div class="auth-box">
+                <div id="auth-tabs">
+                    <button id="tab-login" class="btn-primary" style="background: none; border: 1px solid var(--glass-border);">Login</button>
+                    <button id="tab-signup" class="btn-primary">Sign Up</button>
+                </div>
+                
+                <div id="login-form" style="display: none; margin-top: 2rem;">
+                    <input type="text" id="login-token-input" placeholder="Enter your Access Token (;qi= or ;gg=)">
+                    <button id="login-btn" class="btn-primary" style="width: 100%;">Enter Dashboard</button>
+                </div>
 
-        <section id="projects-grid" class="projects-grid">
-            <!-- Project Cards will be injected here -->
-            <div class="loader">Loading your projects...</div>
+                <div id="signup-form" style="margin-top: 2rem;">
+                    <input type="text" id="signup-name-input" placeholder="Name your new account/project...">
+                    <button id="signup-btn" class="btn-primary" style="width: 100%;">Create Account</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard State -->
+        <section id="dashboard-state" style="display: none;">
+            <header>
+                <h1>Welcome Back, <span id="user-name">User</span></h1>
+                <p>Manage your files and generate secure access tokens.</p>
+            </header>
+
+            <div class="dashboard-grid">
+                <!-- Project Info / Token Manager -->
+                <div class="project-card large">
+                    <div id="project-info">
+                        <h3>Account Details</h3>
+                        <p id="project-id-display" class="meta">ID: --</p>
+                        
+                        <div class="token-generator-section" style="margin-top: 2rem;">
+                            <h4>Generate New Access Token</h4>
+                            <div class="token-generator-form">
+                                <input type="text" id="token-alias" placeholder="Token Name (e.g. My Website)">
+                                <div class="checkbox-group">
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="token-is-private" checked> Private (;qi=)
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="token-is-public"> Public (;gg=)
+                                    </label>
+                                </div>
+                                <button id="generate-token-btn" class="btn-primary">Generate Token</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="file-stats-card" class="project-card">
+                    <h3>Analytics</h3>
+                    <div class="meta" id="file-stats">Loading stats...</div>
+                </div>
+            </div>
         </section>
     </main>
 
-    <!-- Project Modal -->
+    <!-- Success Modal (for New Account) -->
     <div id="modal" class="modal">
         <div class="modal-content">
-            <div id="modal-form">
-                <h2>Create New Project</h2>
-                <input type="text" id="project-name-input" placeholder="Enter project name...">
-                <div class="modal-actions">
-                    <button id="close-modal" class="btn-secondary">Cancel</button>
-                    <button id="confirm-create" class="btn-primary">Create</button>
-                </div>
-            </div>
             <div id="modal-success" style="display: none;">
-                <h2>Project Created! 🎉</h2>
-                <p>Save these tokens safely. You won't see them again!</p>
+                <h2>Account Created! 🎉</h2>
+                <p>This is your **Master Private Token**. Save it now; you will need it to login next time!</p>
                 <div class="token-box">
-                    <label>Private Token (Keep safe!):</label>
+                    <label>Master Token (Keep safe!):</label>
                     <code id="success-priv"></code>
-                </div>
-                <div class="token-box">
-                    <label>Public Token (For CDN):</label>
-                    <code id="success-pub"></code>
+                    <button class="btn-secondary" onclick="copyToken('success-priv')" style="margin-top: 5px; font-size: 0.7rem;">Copy Token</button>
                 </div>
                 <div class="modal-actions">
                     <button id="apply-token-btn" class="btn-primary">Apply & Enter Dashboard</button>

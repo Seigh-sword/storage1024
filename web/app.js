@@ -1,17 +1,43 @@
 const API_BASE = 'https://storage1024.onrender.com/api';
 
-function getToken() {
-    let token = localStorage.getItem('s1024_token');
-    if (!token) {
-        token = prompt("Please enter your Storage1024 Token (Private or Public):");
-        if (token) localStorage.setItem('s1024_token', token);
-    }
-    return token;
+// --- UI Helpers ---
+function showToast(msg, type = 'success') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span> ${msg}`;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
 }
 
-async function fetchIndex() {
-    const token = getToken();
-    if (!token) return;
+function copyToken(elementId) {
+    const text = document.getElementById(elementId).innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        showToast("Token copied to clipboard!");
+    });
+}
+
+function setAppState(state) {
+    const login = document.getElementById('login-state');
+    const dashboard = document.getElementById('dashboard-state');
+    const nav = document.getElementById('nav-actions');
+
+    if (state === 'dashboard') {
+        login.style.display = 'none';
+        dashboard.style.display = 'flex';
+        nav.innerHTML = '<button id="logout-btn" class="btn-secondary">Logout</button>';
+        document.getElementById('logout-btn').onclick = logout;
+    } else {
+        login.style.display = 'flex';
+        dashboard.style.display = 'none';
+        nav.innerHTML = '';
+    }
+}
+
+// --- Auth Operations ---
+async function fetchAccountData() {
+    const token = localStorage.getItem('s1024_token');
+    if (!token) return setAppState('login');
 
     try {
         const res = await fetch(`${API_BASE}/index`, {
@@ -19,70 +45,77 @@ async function fetchIndex() {
         });
         
         if (res.status === 401 || res.status === 403) {
-            localStorage.removeItem('s1024_token');
-            alert("Invalid Token. Please refresh and try again.");
-            return;
+            return logout();
         }
 
         const data = await res.json();
         if (data && data.projects) {
-            renderProjects(data.projects);
-        } else {
-            console.error("Invalid data format:", data);
-            document.getElementById('projects-grid').innerHTML = '<div class="error">Invalid data returned from server.</div>';
+            const [id, p] = Object.entries(data.projects)[0];
+            renderDashboard(id, p);
+            setAppState('dashboard');
         }
     } catch (err) {
-        console.error("Failed to fetch index:", err);
-        document.getElementById('projects-grid').innerHTML = '<div class="error">Error connecting to cloud. Is your bridge running?</div>';
+        showToast("Connection lost. Retrying...", "error");
     }
 }
 
-function renderProjects(projects) {
-    const grid = document.getElementById('projects-grid');
-    if (!projects) return;
-    grid.innerHTML = '';
+function logout() {
+    localStorage.removeItem('s1024_token');
+    window.location.reload();
+}
 
-    Object.entries(projects).forEach(([id, p]) => {
-        const card = document.createElement('div');
-        card.className = 'project-card';
-        card.innerHTML = `
-            <div class="meta">#${id}</div>
-            <h3>${p.name || 'Unnamed Project'}</h3>
-            <div class="meta">Tokens: ${(p.tokens.private?.length || 0) + (p.tokens.public?.length || 0)}</div>
-            <div class="token-list">
-                Private: ${p.tokens.private?.[0] || 'N/A'}<br>
-                Public: ${p.tokens.public?.[0] || 'N/A'}
-            </div>
-            <div class="meta" style="margin-top: 15px">
-                Files: ${Object.keys(p.files || {}).length} | GVs: ${Object.keys(p.global_vars || {}).length}
-            </div>
-        `;
-        grid.appendChild(card);
-    });
+// --- Dashboard Logic ---
+function renderDashboard(id, p) {
+    document.getElementById('user-name').innerText = p.name || "User";
+    document.getElementById('project-id-display').innerText = `Account ID: ${id}`;
+    
+    // Stats
+    const fileCount = Object.keys(p.files || {}).length;
+    const gvCount = Object.keys(p.global_vars || {}).length;
+    document.getElementById('file-stats').innerHTML = `
+        <div style="font-size: 2rem; font-weight: 700;">${fileCount}</div> Files Stored
+        <div style="font-size: 2rem; font-weight: 700; margin-top: 1rem;">${gvCount}</div> Global Variables
+    `;
 
-    if (Object.keys(projects).length === 0) {
-        grid.innerHTML = '<div class="meta">No projects found. Create one to get started!</div>';
+    // Token Gen Logic
+    document.getElementById('generate-token-btn').onclick = () => generateNewToken(id);
+}
+
+async function generateNewToken(projectId) {
+    const alias = document.getElementById('token-alias').value;
+    const isPrivate = document.getElementById('token-is-private').checked;
+    const token = localStorage.getItem('s1024_token');
+
+    if (!alias) return showToast("Please name your token!", "error");
+
+    try {
+        const res = await fetch(`${API_BASE}/projects/${projectId}/tokens`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ name: alias, type: isPrivate ? 'private' : 'public' })
+        });
+        
+        const data = await res.json();
+        if (res.status === 200) {
+            showToast(`Generated ${isPrivate ? 'Private' : 'Public'} Token!`);
+            // Show result temporarily or log to console for user to copy
+            console.log("New Token:", data.token);
+            prompt("Successfully generated token. Copy it now:", data.token);
+        } else {
+            showToast(data.detail || "Failed to generate token", "error");
+        }
+    } catch (err) {
+        showToast("Error generating token", "error");
     }
 }
 
-// Modal Logic
-const modal = document.getElementById('modal');
-const createBtn = document.getElementById('create-project-btn');
-const closeBtn = document.getElementById('close-modal');
-const confirmBtn = document.getElementById('confirm-create');
-
-createBtn.onclick = () => modal.style.display = 'flex';
-closeBtn.onclick = () => {
-    modal.style.display = 'none';
-    document.getElementById('project-name-input').value = '';
-};
-
-confirmBtn.onclick = async () => {
-    const name = document.getElementById('project-name-input').value;
-    if (!name) return;
-
-    confirmBtn.disabled = true;
-    confirmBtn.innerText = 'Creating...';
+// --- Account Creation (Sign Up) ---
+document.getElementById('signup-btn').onclick = async () => {
+    const name = document.getElementById('signup-name-input').value;
+    if (!name) return showToast("Enter a name for your account!", "error");
 
     try {
         const res = await fetch(`${API_BASE}/projects/create`, {
@@ -92,28 +125,38 @@ confirmBtn.onclick = async () => {
         });
         
         const data = await res.json();
-        if (res.status !== 200) {
-            alert("Error: " + (data.detail || "Failed to create project"));
-        } else {
-            // Show success state
-            document.getElementById('modal-form').style.display = 'none';
+        if (res.status === 200) {
+            document.getElementById('modal').style.display = 'flex';
             document.getElementById('modal-success').style.display = 'block';
             document.getElementById('success-priv').innerText = data.tokens.private;
-            document.getElementById('success-pub').innerText = data.tokens.public;
             
-            // Setup apply button
             document.getElementById('apply-token-btn').onclick = () => {
                 localStorage.setItem('s1024_token', data.tokens.private);
                 window.location.reload();
             };
         }
     } catch (err) {
-        alert("Network error. Failed to create project.");
-    } finally {
-        confirmBtn.disabled = false;
-        confirmBtn.innerText = 'Create';
+        showToast("Signup failed. Server offline?", "error");
     }
 };
 
+// --- Login Flow ---
+document.getElementById('login-btn').onclick = () => {
+    const token = document.getElementById('login-token-input').value;
+    if (!token) return showToast("Enter your token!", "error");
+    localStorage.setItem('s1024_token', token);
+    fetchAccountData();
+};
+
+document.getElementById('tab-login').onclick = () => {
+    document.getElementById('login-form').style.display = 'block';
+    document.getElementById('signup-form').style.display = 'none';
+};
+
+document.getElementById('tab-signup').onclick = () => {
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('signup-form').style.display = 'block';
+};
+
 // Initial Load
-fetchIndex();
+fetchAccountData();

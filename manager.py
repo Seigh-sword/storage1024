@@ -3,8 +3,12 @@ import random
 import string
 import asyncio
 import json
+import uuid
 from dotenv import load_dotenv
 from client import TelegramStorage
+
+TOKEN_PRIVATE = "private"
+TOKEN_PUBLIC = "public"
 
 # Load config from multiple potential locations
 config_paths = [
@@ -17,20 +21,35 @@ for path in config_paths:
         break
 
 def generate_private_token():
-    # s1024-[5 random string]-[3 random number]=
-    rand_str = ''.join(random.choices(string.ascii_letters + string.digits, k=5))
-    rand_num = ''.join(random.choices(string.digits, k=3))
-    return f"s1024-{rand_str}-{rand_num}="
+    # Create private token
+    unique_id = str(uuid.uuid4())[:18]
+    return f"s1024-{unique_id};qi="
 
 def generate_public_token():
-    # 32 chars long, ends with .gg=
-    # 32 - 4 (.gg=) = 28 chars
-    rand_body = ''.join(random.choices(string.ascii_letters + string.digits, k=28))
-    return f"{rand_body}.gg="
+    # Create public token
+    return "".join(random.choices(string.ascii_letters + string.digits, k=32)) + ";gg="
 
 class ProjectManager:
     def __init__(self):
         self.storage = TelegramStorage()
+        self.index = {} # Initialize index, will be loaded on demand
+
+    async def _load_index(self):
+        await self.storage.connect()
+        self.index = await self.storage.get_index()
+        await self.storage.disconnect()
+
+    async def validate_token(self, token):
+        if not token: return None, None
+        
+        await self._load_index() # Load index before validation
+        
+        for project_id, p in self.index.get("projects", {}).items():
+            if token in p.get("tokens", {}).get("private", []):
+                return project_id, TOKEN_PRIVATE
+            if token in p.get("tokens", {}).get("public", []):
+                return project_id, TOKEN_PUBLIC
+        return None, None
 
     async def create_project(self, name):
         await self.storage.connect()

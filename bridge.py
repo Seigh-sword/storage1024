@@ -79,14 +79,18 @@ app.add_middleware(
 manager = ProjectManager()
 
 @app.get("/api/index")
-async def get_index(token_type: str = Depends(validate_token)):
+async def get_index(auth: tuple = Depends(validate_token)):
+    project_id, token_type = auth
     check_access(token_type, "admin") # Only private
-    await manager.storage.connect()
-    try:
-        index = await manager.storage.get_index()
-        return index
-    finally:
-        await manager.storage.disconnect()
+    # Return ONLY the authorized project
+    p = manager.index["projects"].get(project_id)
+    if not p:
+        raise HTTPException(status_code=404, detail="Project not found")
+        
+    return {
+        "status": "success",
+        "projects": { project_id: p } 
+    }
 
 @app.post("/api/projects/create")
 async def create_project(data: Request):
@@ -103,13 +107,38 @@ async def create_project(data: Request):
         }
     }
 
+@app.post("/api/projects/{project_id}/tokens")
+async def generate_project_token(
+    project_id: str, 
+    data: Request, 
+    auth: tuple = Depends(validate_token)
+):
+    auth_project_id, token_type = auth
+    if auth_project_id != project_id:
+        raise HTTPException(status_code=403, detail="Token does not match project_id")
+    
+    check_access(token_type, "admin") # Only private can generate new tokens
+    
+    req = await data.json()
+    new_type = req.get("type", "public") # Default to public
+    t_const = TOKEN_PRIVATE if new_type == "private" else TOKEN_PUBLIC
+    
+    new_token = await manager.add_token_to_project(project_id, t_const)
+    if not new_token:
+        raise HTTPException(status_code=404, detail="Project not found")
+        
+    return {"status": "success", "token": new_token}
+
 @app.post("/api/projects/{project_id}/upload")
 async def upload_project_file(
     project_id: str, 
     file: UploadFile = File(...), 
     alias: str = Form(...),
-    token_type: str = Depends(validate_token)
+    auth: tuple = Depends(validate_token)
 ):
+    auth_project_id, token_type = auth
+    if auth_project_id != project_id:
+        raise HTTPException(status_code=403, detail="Token does not match project_id")
     check_access(token_type, "upload")
     
     # 1. Check size limit
@@ -139,7 +168,10 @@ async def upload_project_file(
             os.remove(temp_path)
 
 @app.post("/api/projects/{project_id}/gv")
-async def add_gv(project_id: str, data: Request, token_type: str = Depends(validate_token)):
+async def add_gv(project_id: str, data: Request, auth: tuple = Depends(validate_token)):
+    auth_project_id, token_type = auth
+    if auth_project_id != project_id:
+        raise HTTPException(status_code=403, detail="Token does not match project_id")
     check_access(token_type, "upload") # Uploading/setting is allowed if they have the token
     
     # 1s queue for GV
@@ -154,7 +186,10 @@ async def add_gv(project_id: str, data: Request, token_type: str = Depends(valid
     return {"status": "success"}
 
 @app.get("/api/projects/{project_id}/gv/{alias}")
-async def get_gv(project_id: str, alias: str, token_type: str = Depends(validate_token)):
+async def get_gv(project_id: str, alias: str, auth: tuple = Depends(validate_token)):
+    auth_project_id, token_type = auth
+    if auth_project_id != project_id:
+        raise HTTPException(status_code=403, detail="Token does not match project_id")
     check_access(token_type, "get_gv")
     await manager.storage.connect()
     try:
