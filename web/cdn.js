@@ -7,7 +7,7 @@ const Storage1024 = (function() {
         constructor(config) {
             this.projectId = config.projectId;
             this.token = config.token;
-            this.apiBase = config.apiBase || 'http://127.0.0.1:8000/api';
+            this.apiBase = config.apiBase || 'https://storage1024.onrender.com/api';
         }
 
         async uploadFile(file, alias) {
