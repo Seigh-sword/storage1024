@@ -5,7 +5,15 @@ from telethon.sessions import StringSession
 from telethon.tl.types import MessageMediaDocument
 from dotenv import load_dotenv
 
-load_dotenv(os.path.expanduser('~/.storage1024/config.env'))
+# Load config from multiple potential locations
+config_paths = [
+    os.path.expanduser('~/.storage1024/config.env'), # Local dev (outside repo)
+    '.env' # Cloud hosting (injected by host)
+]
+for path in config_paths:
+    if os.path.exists(path):
+        load_dotenv(path)
+        break
 
 class TelegramStorage:
     def __init__(self):
