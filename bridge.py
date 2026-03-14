@@ -168,7 +168,10 @@ async def get_gv(project_id: str, alias: str, token_type: str = Depends(validate
     finally:
         await manager.storage.disconnect()
 
-# Serve the web frontend
+# Serve assets
+app.mount("/assets", StaticFiles(directory="assets"), name="assets")
+
+# Serve the web frontend (mount this LAST)
 app.mount("/", StaticFiles(directory="web", html=True), name="web")
 
 if __name__ == "__main__":
