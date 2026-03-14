@@ -4,7 +4,15 @@ from telethon import TelegramClient
 from telethon.sessions import StringSession
 from dotenv import load_dotenv
 
-load_dotenv()
+# Load config from multiple potential locations
+config_paths = [
+    os.path.expanduser('~/.storage1024/config.env'), # Local dev (outside repo)
+    '.env' # Cloud hosting (injected by host)
+]
+for path in config_paths:
+    if os.path.exists(path):
+        load_dotenv(path)
+        break
 
 api_id = os.getenv('API_ID')
 api_hash = os.getenv('API_HASH')
