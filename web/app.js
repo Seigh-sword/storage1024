@@ -79,8 +79,7 @@ closeBtn.onclick = () => {
 
 confirmBtn.onclick = async () => {
     const name = document.getElementById('project-name-input').value;
-    const token = getToken();
-    if (!name || !token) return;
+    if (!name) return;
 
     confirmBtn.disabled = true;
     confirmBtn.innerText = 'Creating...';
@@ -88,20 +87,25 @@ confirmBtn.onclick = async () => {
     try {
         const res = await fetch(`${API_BASE}/projects/create`, {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name })
         });
         
+        const data = await res.json();
         if (res.status !== 200) {
-            const errData = await res.json();
-            alert("Error: " + (errData.detail || "Failed to create project"));
+            alert("Error: " + (data.detail || "Failed to create project"));
         } else {
-            modal.style.display = 'none';
-            document.getElementById('project-name-input').value = '';
-            fetchIndex();
+            // Show success state
+            document.getElementById('modal-form').style.display = 'none';
+            document.getElementById('modal-success').style.display = 'block';
+            document.getElementById('success-priv').innerText = data.tokens.private;
+            document.getElementById('success-pub').innerText = data.tokens.public;
+            
+            // Setup apply button
+            document.getElementById('apply-token-btn').onclick = () => {
+                localStorage.setItem('s1024_token', data.tokens.private);
+                window.location.reload();
+            };
         }
     } catch (err) {
         alert("Network error. Failed to create project.");

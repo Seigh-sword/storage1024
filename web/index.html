@@ -34,11 +34,28 @@
     <!-- Project Modal -->
     <div id="modal" class="modal">
         <div class="modal-content">
-            <h2>Create New Project</h2>
-            <input type="text" id="project-name-input" placeholder="Enter project name...">
-            <div class="modal-actions">
-                <button id="close-modal" class="btn-secondary">Cancel</button>
-                <button id="confirm-create" class="btn-primary">Create</button>
+            <div id="modal-form">
+                <h2>Create New Project</h2>
+                <input type="text" id="project-name-input" placeholder="Enter project name...">
+                <div class="modal-actions">
+                    <button id="close-modal" class="btn-secondary">Cancel</button>
+                    <button id="confirm-create" class="btn-primary">Create</button>
+                </div>
+            </div>
+            <div id="modal-success" style="display: none;">
+                <h2>Project Created! 🎉</h2>
+                <p>Save these tokens safely. You won't see them again!</p>
+                <div class="token-box">
+                    <label>Private Token (Keep safe!):</label>
+                    <code id="success-priv"></code>
+                </div>
+                <div class="token-box">
+                    <label>Public Token (For CDN):</label>
+                    <code id="success-pub"></code>
+                </div>
+                <div class="modal-actions">
+                    <button id="apply-token-btn" class="btn-primary">Apply & Enter Dashboard</button>
+                </div>
             </div>
         </div>
     </div>

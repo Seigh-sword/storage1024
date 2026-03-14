@@ -60,7 +60,7 @@ class ProjectManager:
         print(f"ID: {project_id}")
         print(f"Private Token: {private_token}")
         print(f"Public Token: {public_token}")
-        return project_id
+        return project_id, private_token, public_token
 
     async def add_file_to_project(self, project_id, alias, file_path):
         await self.storage.connect()

@@ -89,12 +89,19 @@ async def get_index(token_type: str = Depends(validate_token)):
         await manager.storage.disconnect()
 
 @app.post("/api/projects/create")
-async def create_project(data: Request, token_type: str = Depends(validate_token)):
-    check_access(token_type, "admin") # Only private
+async def create_project(data: Request):
+    # This is public Sign Up
     req = await data.json()
     name = req.get("name", "New Project")
-    project_id = await manager.create_project(name)
-    return {"status": "success", "project_id": project_id}
+    project_id, priv, pub = await manager.create_project(name)
+    return {
+        "status": "success", 
+        "project_id": project_id,
+        "tokens": {
+            "private": priv,
+            "public": pub
+        }
+    }
 
 @app.post("/api/projects/{project_id}/upload")
 async def upload_project_file(
