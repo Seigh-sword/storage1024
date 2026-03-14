@@ -186,3 +186,29 @@ header p {
     justify-content: flex-end;
     gap: 1rem;
 }
+
+.token-box {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 10px;
+    margin: 15px 0;
+    text-align: left;
+}
+
+.token-box label {
+    display: block;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 5px;
+}
+
+.token-box code {
+    display: block;
+    word-break: break-all;
+    font-family: monospace;
+    color: #6366F1;
+    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px;
+    border-radius: 6px;
+}
