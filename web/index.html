@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storage1024 Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="glass-bg"></div>
+    <nav>
+        <div class="logo">STORAGE<span>1024</span></div>
+        <div class="nav-links">
+            <button id="create-project-btn" class="btn-primary">New Project</button>
+        </div>
+    </nav>
+
+    <main>
+        <header>
+            <h1>Welcome, <span id="user-name">Storage Master</span></h1>
+            <p>Your personal cloud storage powered by Telegram.</p>
+        </header>
+
+        <section id="projects-grid" class="projects-grid">
+            <!-- Project Cards will be injected here -->
+            <div class="loader">Loading your projects...</div>
+        </section>
+    </main>
+
+    <!-- Project Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h2>Create New Project</h2>
+            <input type="text" id="project-name-input" placeholder="Enter project name...">
+            <div class="modal-actions">
+                <button id="close-modal" class="btn-secondary">Cancel</button>
+                <button id="confirm-create" class="btn-primary">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

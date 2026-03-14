@@ -1,0 +1,9 @@
+.env
+*.session
+*.session_string
+__pycache__/
+node_modules/
+.DS_Store
+storage.session
+storage.session_string
+restored_test.txt
