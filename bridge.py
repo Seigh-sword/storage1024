@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import uvicorn
 import os
 import shutil
+import asyncio
 
 # Load config from multiple potential locations
 config_paths = [
@@ -42,6 +43,30 @@ def check_access(token_type: str, required_scope: str):
     if required_scope not in allowed_public_ops:
         raise HTTPException(status_code=403, detail="Scope restricted for Public tokens")
     return True
+
+# Rate Limiting & Queuing
+class QueueManager:
+    def __init__(self):
+        self.lock = asyncio.Lock()
+
+    def get_delay_for_size(self, size_mb: float) -> int:
+        if size_mb > 1800: return -1 # Reject
+        if size_mb < 5: return 1
+        if size_mb < 25: return 3
+        if size_mb < 50: return 5
+        if size_mb < 100: return 10
+        if size_mb < 350: return 15
+        if size_mb < 750: return 20
+        if size_mb < 950: return 25
+        if size_mb < 1000: return 28
+        if size_mb < 1024: return 30
+        return 35 # 1024 to 1800
+
+    async def enqueue(self, delay: int):
+        async with self.lock:
+            await asyncio.sleep(delay)
+
+queue_manager = QueueManager()
 
 # Enable CORS for local development
 app.add_middleware(
@@ -79,6 +104,21 @@ async def upload_project_file(
     token_type: str = Depends(validate_token)
 ):
     check_access(token_type, "upload")
+    
+    # 1. Check size limit
+    size_mb = 0
+    file.file.seek(0, 2) # Seek to end
+    size_bytes = file.file.tell()
+    file.file.seek(0) # Reset
+    size_mb = size_bytes / (1024 * 1024)
+
+    delay = queue_manager.get_delay_for_size(size_mb)
+    if delay == -1:
+        raise HTTPException(status_code=413, detail="File exceeds 1800MB limit")
+
+    # 2. Wait in queue
+    await queue_manager.enqueue(delay)
+
     # Save file temporarily
     temp_path = f"temp_{file.filename}"
     with open(temp_path, "wb") as buffer:
@@ -94,6 +134,10 @@ async def upload_project_file(
 @app.post("/api/projects/{project_id}/gv")
 async def add_gv(project_id: str, data: Request, token_type: str = Depends(validate_token)):
     check_access(token_type, "upload") # Uploading/setting is allowed if they have the token
+    
+    # 1s queue for GV
+    await queue_manager.enqueue(1)
+
     req = await data.json()
     alias = req.get("alias")
     value = req.get("value")
