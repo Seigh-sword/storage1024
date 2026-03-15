@@ -32,7 +32,7 @@ def generate_public_token():
 class ProjectManager:
     def __init__(self):
         self.storage = TelegramStorage()
-        self.index = {} # Initialize index, will be loaded on demand
+        self.index = {"projects": {}} # Initialize index
 
     async def _load_index(self):
         await self.storage.connect()
@@ -108,6 +108,26 @@ class ProjectManager:
         
         await self.storage.update_index(index)
         await self.storage.disconnect()
+
+    async def add_token_to_project(self, project_id, token_type):
+        await self.storage.connect()
+        index = await self.storage.get_index()
+        
+        if project_id not in index['projects']:
+            await self.storage.disconnect()
+            return None
+            
+        new_token = generate_private_token() if token_type == TOKEN_PRIVATE else generate_public_token()
+        
+        t_key = "private" if token_type == TOKEN_PRIVATE else "public"
+        if t_key not in index['projects'][project_id]['tokens']:
+            index['projects'][project_id]['tokens'][t_key] = []
+            
+        index['projects'][project_id]['tokens'][t_key].append(new_token)
+        
+        await self.storage.update_index(index)
+        await self.storage.disconnect()
+        return new_token
 
 async def main():
     import sys

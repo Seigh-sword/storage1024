@@ -22,17 +22,26 @@ for path in config_paths:
 app = FastAPI(title="Storage1024 API Bridge")
 security = HTTPBearer()
 
-TOKEN_PRIVATE = "PRIVATE"
-TOKEN_PUBLIC = "PUBLIC"
+TOKEN_PRIVATE = "private"
+TOKEN_PUBLIC = "public"
 
 async def validate_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     token = credentials.credentials
-    if token.startswith("s1024-"):
-        return TOKEN_PRIVATE
-    elif token.endswith(".gg="):
-        return TOKEN_PUBLIC
+    if token.endswith(";qi="):
+        t_type = TOKEN_PRIVATE
+    elif token.endswith(";gg="):
+        t_type = TOKEN_PUBLIC
     else:
-        raise HTTPException(status_code=403, detail="Invalid token format")
+        # Fallback for older tokens just in case, but really we want the new format
+        if token.startswith("s1024-"): t_type = TOKEN_PRIVATE
+        elif token.endswith(".gg="): t_type = TOKEN_PUBLIC
+        else: raise HTTPException(status_code=401, detail="Invalid token format")
+
+    project_id, validated_type = await manager.validate_token(token)
+    if not project_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    return project_id, validated_type
 
 def check_access(token_type: str, required_scope: str):
     if token_type == TOKEN_PRIVATE:
@@ -82,8 +91,10 @@ manager = ProjectManager()
 async def get_index(auth: tuple = Depends(validate_token)):
     project_id, token_type = auth
     check_access(token_type, "admin") # Only private
+    
     # Return ONLY the authorized project
-    p = manager.index["projects"].get(project_id)
+    projects = manager.index.get("projects", {})
+    p = projects.get(project_id)
     if not p:
         raise HTTPException(status_code=404, detail="Project not found")
         
