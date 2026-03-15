@@ -234,15 +234,15 @@ function renderStats(p) {
     
     // Calculate total size in MB (handle legacy strings vs new objects)
     const totalSize = files.reduce((acc, f) => acc + (f.size || 0), 0);
-    const quotaUsed = Math.min(totalSize, 1024);
-    const pct = (quotaUsed / 1024) * 100;
+    const quotaUsed = Math.min(totalSize, 1800);
+    const pct = (quotaUsed / 1800) * 100;
 
     document.getElementById('file-stats').innerHTML = `
         <div style="font-size: 2.5rem; font-weight: 700;">${fileCount}</div> Files
         <div style="font-size: 2.5rem; font-weight: 700; margin-top: 1rem;">${gvCount}</div> GVs
     `;
     
-    document.getElementById('quota-text').innerText = `${totalSize.toFixed(1)} / 1024 MB`;
+    document.getElementById('quota-text').innerText = `${totalSize.toFixed(1)} / 1800 MB`;
     document.getElementById('quota-fill').style.width = `${pct}%`;
     
     // Color coding for storage pressure
