@@ -1,12 +1,70 @@
 :root {
-    --bg: #0a0a0c;
-    --glass: rgba(255, 255, 255, 0.05);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --primary: #6366f1;
-    --primary-glow: rgba(99, 102, 241, 0.4);
-    --secondary: #a855f7;
-    --text: #f8fafc;
-    --text-dim: #94a3b8;
+    --bg: #050505;
+    --glass: rgba(255, 255, 255, 0.02);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --primary: #ffffff;
+    --primary-glow: rgba(255, 255, 255, 0.1);
+    --secondary: #a1a1a1;
+    --text: #ffffff;
+    --text-dim: #888888;
+    --accent: #ffffff;
+}
+
+/* Birthday Theme (March 15) */
+body.birthday {
+    --primary: #f59e0b;
+    --primary-glow: rgba(245, 158, 11, 0.2);
+    --secondary: #fbbf24;
+    --accent: #f59e0b;
+}
+
+body.birthday .logo::after {
+    content: ' 🎂';
+    font-size: 1rem;
+}
+
+/* Pride Theme (June) */
+body.pride {
+    --primary: #ec4899;
+    --primary-glow: rgba(236, 72, 153, 0.2);
+    background: linear-gradient(135deg, #050505 80%, rgba(236, 72, 153, 0.05) 100%);
+}
+
+/* Finance Month (February) */
+body.finance-month {
+    --primary: #10b981;
+    --primary-glow: rgba(16, 185, 129, 0.2);
+    --accent: #f59e0b;
+}
+
+/* April Fools (April 1) */
+body.april-fools {
+    filter: invert(1) hue-rotate(180deg);
+}
+
+/* User's Birthday (May 27) */
+body.user-birthday {
+    --primary: #f472b6;
+    --primary-glow: rgba(244, 114, 182, 0.2);
+}
+
+/* Halloween (October) */
+body.halloween {
+    --primary: #f97316;
+    --primary-glow: rgba(249, 115, 22, 0.2);
+}
+
+/* Hide pseudo-elements if using direct SVG replacement */
+body.birthday .logo::after,
+body.finance-month .logo::after,
+body.user-birthday .logo::after,
+body.halloween .logo::after {
+    content: none !important;
+}
+
+body.christmas .logo::before {
+    content: '🎅 ';
+    font-size: 1.2rem;
 }
 
 * {
@@ -46,30 +104,42 @@ nav {
 }
 
 .logo {
-    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 1.5rem;
     font-weight: 700;
-    letter-spacing: -1px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.logo img {
+    height: 32px;
+    width: 32px;
 }
 
 .logo span {
-    color: var(--primary);
+    opacity: 0.5;
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: 12px;
-    color: white;
-    font-weight: 600;
+    background: var(--primary);
+    border: 1px solid var(--primary);
+    padding: 0.8rem 1.8rem;
+    border-radius: 4px;
+    color: var(--bg);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    transition: all 0.2s ease;
 }
 
 .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+    background: transparent;
+    color: var(--primary);
+    transform: none;
+    box-shadow: none;
 }
 
 .btn-secondary {
@@ -119,7 +189,25 @@ header p {
 
 .project-card:hover {
     border-color: var(--primary);
-    transform: scale(1.02);
+    transform: none;
+}
+
+.auth-box input, .token-generator-form input {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid var(--glass-border);
+    border-radius: 0;
+    padding: 1rem 0;
+    color: white;
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    width: 100%;
+    transition: border-color 0.3s ease;
+}
+
+.auth-box input:focus {
+    outline: none;
+    border-color: var(--primary);
 }
 
 .project-card h3 {
@@ -176,6 +264,7 @@ header p {
     margin-bottom: 1.5rem;
     background: linear-gradient(135deg, #fff 0%, #a5a5a5 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -247,4 +336,85 @@ header p {
     width: 20px;
     height: 20px;
     margin: 0;
+}
+
+/* Dashboard Component Enhancements */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+    transition: all 0.2s;
+}
+
+.item-row:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--primary);
+}
+
+.item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.item-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: white;
+}
+
+.item-meta {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.item-actions {
+    display: flex;
+    gap: 10px;
+}
+
+textarea#gv-value {
+    width: 100%;
+    min-height: 120px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    color: white;
+    padding: 1rem;
+    margin: 1rem 0;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.85rem;
+    resize: vertical;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary) 0%, #3b82f6 100%);
+    width: 0%;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }

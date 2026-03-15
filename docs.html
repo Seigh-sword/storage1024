@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storage1024 | Documentation</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="/assets/icon.svg">
+</head>
+<body class="minimalist">
+    <nav class="glass-nav">
+        <div class="nav-content">
+            <div class="logo-area" onclick="location.href='/'">
+                <img id="dynamic-logo" src="/assets/icon.svg" alt="S1024" class="logo">
+                <span class="logo-text">Storage1024</span>
+            </div>
+            <div class="nav-links">
+                <a href="/">Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="docs-section">
+            <header class="section-header">
+                <h1>Documentation</h1>
+                <p class="meta">Official guide for developers and integrators.</p>
+            </header>
+
+            <div class="docs-grid">
+                <article class="doc-card">
+                    <h2>📦 s1024.js Library</h2>
+                    <p>The fastest way to integrate Storage1024 into your web apps.</p>
+                    <pre><code>&lt;script src="https://storage1024.onrender.com/s1024.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+    s1024.set_token('YOUR_PRIVATE_OR_PUBLIC_TOKEN');
+    
+    // Save a Global Variable
+    s1024.add_gv('theme', 'dark');
+
+    // Fetch a Global Variable
+    const theme = await s1024.get_gv('theme');
+    console.log(theme); // 'dark'
+&lt;/script&gt;</code></pre>
+                </article>
+
+                <article class="doc-card">
+                    <h2>🌐 REST API</h2>
+                    <p>Direct HTTP endpoints for any language.</p>
+                    <div class="api-endpoint">
+                        <span class="method get">GET</span> <code>/projects/{id}/gv/{alias}</code>
+                    </div>
+                    <div class="api-endpoint">
+                        <span class="method post">POST</span> <code>/projects/{id}/upload</code>
+                    </div>
+                    <div class="api-endpoint">
+                        <span class="method delete">DELETE</span> <code>/projects/{id}/files/{alias}</code>
+                    </div>
+                </article>
+
+                <article class="doc-card">
+                    <h2>🔐 Security Levels</h2>
+                    <ul>
+                        <li><strong>Private Tokens (;qi=)</strong>: Full access. Dashboard login, token generation, deletion.</li>
+                        <li><strong>Public Tokens (;gg=)</strong>: Restricted. Can upload and fetch GVs, but cannot delete or revoke.</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <style>
+        .docs-section { margin-top: 4rem; }
+        .docs-grid { display: grid; gap: 2rem; margin-top: 2rem; }
+        .doc-card { 
+            background: rgba(255, 255, 255, 0.02); 
+            border: 1px solid var(--glass-border); 
+            padding: 2rem; 
+            border-radius: 24px; 
+            backdrop-filter: blur(10px);
+        }
+        pre { 
+            background: rgba(0, 0, 0, 0.3); 
+            padding: 1.5rem; 
+            border-radius: 12px; 
+            overflow-x: auto; 
+            font-size: 0.85rem;
+            margin-top: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        code { color: var(--primary); font-family: 'Courier New', monospace; }
+        .api-endpoint { margin: 1rem 0; font-size: 0.9rem; }
+        .method { padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.7rem; margin-right: 8px; }
+        .get { background: #3b82f6; }
+        .post { background: #10b981; }
+        .delete { background: #ef4444; }
+        ul { margin-top: 1rem; padding-left: 1.5rem; color: var(--text-muted); line-height: 1.6; }
+    </style>
+
+    <script src="app.js"></script>
+    <script>
+        // Ensure theme applies to docs too
+        window.onload = () => checkHoliday();
+    </script>
+</body>
+</html>

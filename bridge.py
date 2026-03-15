@@ -9,10 +9,9 @@ import os
 import shutil
 import asyncio
 
-# Load config from multiple potential locations
 config_paths = [
-    os.path.expanduser('~/.storage1024/config.env'), # Local dev (outside repo)
-    '.env' # Cloud hosting (injected by host)
+    os.path.expanduser('~/.storage1024/config.env'),
+    '.env'
 ]
 for path in config_paths:
     if os.path.exists(path):
@@ -32,7 +31,6 @@ async def validate_token(credentials: HTTPAuthorizationCredentials = Depends(sec
     elif token.endswith(";gg="):
         t_type = TOKEN_PUBLIC
     else:
-        # Fallback for older tokens just in case, but really we want the new format
         if token.startswith("s1024-"): t_type = TOKEN_PRIVATE
         elif token.endswith(".gg="): t_type = TOKEN_PUBLIC
         else: raise HTTPException(status_code=401, detail="Invalid token format")
@@ -45,21 +43,19 @@ async def validate_token(credentials: HTTPAuthorizationCredentials = Depends(sec
 
 def check_access(token_type: str, required_scope: str):
     if token_type == TOKEN_PRIVATE:
-        return True # Private has full access
+        return True
     
-    # Public scope restrictions
     allowed_public_ops = ["upload", "get_gv"]
     if required_scope not in allowed_public_ops:
         raise HTTPException(status_code=403, detail="Scope restricted for Public tokens")
     return True
 
-# Rate Limiting & Queuing
 class QueueManager:
     def __init__(self):
         self.lock = asyncio.Lock()
 
     def get_delay_for_size(self, size_mb: float) -> int:
-        if size_mb > 1800: return -1 # Reject
+        if size_mb > 1800: return -1
         if size_mb < 5: return 1
         if size_mb < 25: return 3
         if size_mb < 50: return 5
@@ -69,7 +65,7 @@ class QueueManager:
         if size_mb < 950: return 25
         if size_mb < 1000: return 28
         if size_mb < 1024: return 30
-        return 35 # 1024 to 1800
+        return 35
 
     async def enqueue(self, delay: int):
         async with self.lock:
@@ -77,7 +73,6 @@ class QueueManager:
 
 queue_manager = QueueManager()
 
-# Enable CORS for local development
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -90,9 +85,8 @@ manager = ProjectManager()
 @app.get("/api/index")
 async def get_index(auth: tuple = Depends(validate_token)):
     project_id, token_type = auth
-    check_access(token_type, "admin") # Only private
+    check_access(token_type, "admin")
     
-    # Return ONLY the authorized project
     projects = manager.index.get("projects", {})
     p = projects.get(project_id)
     if not p:
@@ -105,7 +99,6 @@ async def get_index(auth: tuple = Depends(validate_token)):
 
 @app.post("/api/projects/create")
 async def create_project(data: Request):
-    # This is public Sign Up
     req = await data.json()
     name = req.get("name", "New Project")
     project_id, priv, pub = await manager.create_project(name)
@@ -128,10 +121,10 @@ async def generate_project_token(
     if auth_project_id != project_id:
         raise HTTPException(status_code=403, detail="Token does not match project_id")
     
-    check_access(token_type, "admin") # Only private can generate new tokens
+    check_access(token_type, "admin")
     
     req = await data.json()
-    new_type = req.get("type", "public") # Default to public
+    new_type = req.get("type", "public")
     t_const = TOKEN_PRIVATE if new_type == "private" else TOKEN_PUBLIC
     
     new_token = await manager.add_token_to_project(project_id, t_const)
@@ -152,27 +145,23 @@ async def upload_project_file(
         raise HTTPException(status_code=403, detail="Token does not match project_id")
     check_access(token_type, "upload")
     
-    # 1. Check size limit
-    size_mb = 0
-    file.file.seek(0, 2) # Seek to end
+    file.file.seek(0, 2)
     size_bytes = file.file.tell()
-    file.file.seek(0) # Reset
+    file.file.seek(0)
     size_mb = size_bytes / (1024 * 1024)
-
     delay = queue_manager.get_delay_for_size(size_mb)
     if delay == -1:
         raise HTTPException(status_code=413, detail="File exceeds 1800MB limit")
 
-    # 2. Wait in queue
-    await queue_manager.enqueue(delay)
-
-    # Save file temporarily
     temp_path = f"temp_{file.filename}"
     with open(temp_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     
     try:
-        await manager.add_file_to_project(project_id, alias, temp_path)
+        async with queue_manager.lock:
+            await manager.add_file_to_project(project_id, alias, temp_path)
+            # Penalize AFTER the work is done, blocking the next user in line
+            await asyncio.sleep(delay)
         return {"status": "success", "alias": alias}
     finally:
         if os.path.exists(temp_path):
@@ -183,17 +172,17 @@ async def add_gv(project_id: str, data: Request, auth: tuple = Depends(validate_
     auth_project_id, token_type = auth
     if auth_project_id != project_id:
         raise HTTPException(status_code=403, detail="Token does not match project_id")
-    check_access(token_type, "upload") # Uploading/setting is allowed if they have the token
+    check_access(token_type, "upload")
     
-    # 1s queue for GV
-    await queue_manager.enqueue(1)
-
     req = await data.json()
     alias = req.get("alias")
     value = req.get("value")
     if not alias or not value:
         raise HTTPException(status_code=400, detail="Alias and value required")
-    await manager.add_gv_to_project(project_id, alias, value)
+        
+    async with queue_manager.lock:
+        await manager.add_gv_to_project(project_id, alias, value)
+        await asyncio.sleep(1) # GV penalty AFTER set
     return {"status": "success"}
 
 @app.get("/api/projects/{project_id}/gv/{alias}")
@@ -213,19 +202,72 @@ async def get_gv(project_id: str, alias: str, auth: tuple = Depends(validate_tok
         if not msg_id:
             raise HTTPException(status_code=404, detail="GV not found")
             
-        # Get the actual message content
         msg = await manager.storage.client.get_messages(manager.storage.channel_id, ids=msg_id)
-        # Extract value from GV[key]: value
         value = msg.text.split(": ", 1)[-1] if msg and msg.text else None
         return {"alias": alias, "value": value}
     finally:
         await manager.storage.disconnect()
 
-# Serve assets
+@app.delete("/api/projects/{project_id}/files/{alias}")
+async def delete_file(project_id: str, alias: str, auth: tuple = Depends(validate_token)):
+    auth_project_id, token_type = auth
+    if auth_project_id != project_id:
+        raise HTTPException(status_code=403, detail="Token does not match project_id")
+    check_access(token_type, "admin")
+    await manager.delete_file_from_project(project_id, alias)
+    return {"status": "success"}
+
+@app.delete("/api/projects/{project_id}/gv/{alias}")
+async def delete_gv(project_id: str, alias: str, auth: tuple = Depends(validate_token)):
+    auth_project_id, token_type = auth
+    if auth_project_id != project_id:
+        raise HTTPException(status_code=403, detail="Token does not match project_id")
+    check_access(token_type, "admin")
+    await manager.delete_gv_from_project(project_id, alias)
+    return {"status": "success"}
+
+@app.post("/api/projects/{project_id}/tokens/revoke")
+async def revoke_token(project_id: str, data: Request, auth: tuple = Depends(validate_token)):
+    auth_project_id, token_type = auth
+    if auth_project_id != project_id:
+        raise HTTPException(status_code=403, detail="Token does not match project_id")
+    check_access(token_type, "admin")
+    
+    req = await data.json()
+    token_to_revoke = req.get("token")
+    if not token_to_revoke:
+        raise HTTPException(status_code=400, detail="Token to revoke required")
+        
+    await manager.revoke_token_from_project(project_id, token_to_revoke)
+    return {"status": "success"}
+
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")
 
-# Serve the web frontend (mount this LAST)
-app.mount("/", StaticFiles(directory="web", html=True), name="web")
+from fastapi.responses import FileResponse
+
+@app.get("/")
+async def read_index():
+    return FileResponse("index.html")
+
+@app.get("/app.js")
+async def read_js():
+    return FileResponse("app.js")
+
+@app.get("/style.css")
+async def read_css():
+    return FileResponse("style.css")
+
+@app.get("/s1024.js")
+async def read_sdk():
+    return FileResponse("s1024.js")
+
+@app.get("/files")
+async def files_redirect():
+    return FileResponse("index.html")
+
+@app.get("/docs")
+async def read_docs():
+    return FileResponse("docs.html")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))

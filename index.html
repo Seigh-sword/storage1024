@@ -15,9 +15,13 @@
     <div id="toast-container"></div>
 
     <nav>
-        <div class="logo">STORAGE<span>1024</span></div>
+        <div class="logo">
+            <img src="/assets/icon.svg" alt="S1024 Logo">
+            STORAGE<span>1024</span>
+        </div>
         <div id="nav-actions" class="nav-links">
-            <!-- Buttons dynamically inserted based on login state -->
+            <a href="/docs" style="margin-right: 20px; color: var(--text-muted); text-decoration: none; font-size: 0.9rem;">Docs</a>
+            <button id="logout-btn" class="btn-secondary" style="font-size: 0.8rem; padding: 6px 12px;" onclick="logout()">Logout</button>
         </div>
     </nav>
 
@@ -77,13 +81,65 @@
                     </div>
                 </div>
 
+                <div id="file-explorer-card" class="project-card large">
+                    <div class="card-header">
+                        <h3>File Explorer</h3>
+                        <button class="btn-secondary" onclick="document.getElementById('file-upload-input').click()">+ Upload File</button>
+                        <input type="file" id="file-upload-input" style="display: none;" onchange="handleFileUpload(this)">
+                    </div>
+                    <div id="file-list" class="item-list">
+                        <p class="meta">No files uploaded yet.</p>
+                    </div>
+                </div>
+
+                <div id="gv-editor-card" class="project-card large">
+                    <div class="card-header">
+                        <h3>Global Variables</h3>
+                        <button class="btn-secondary" onclick="showAddGVModal()">+ Add GV</button>
+                    </div>
+                    <div id="gv-list" class="item-list">
+                        <p class="meta">No variables set.</p>
+                    </div>
+                </div>
+
+                <div id="token-manager-card" class="project-card large">
+                    <div class="card-header">
+                        <h3>Access Tokens</h3>
+                    </div>
+                    <div id="token-list" class="item-list">
+                        <!-- Tokens will be listed here -->
+                    </div>
+                </div>
+
                 <div id="file-stats-card" class="project-card">
                     <h3>Analytics</h3>
                     <div class="meta" id="file-stats">Loading stats...</div>
+                    <div class="quota-container" style="margin-top: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; margin-bottom: 5px;">
+                            <span>Storage Usage</span>
+                            <span id="quota-text">0 / 1024 MB</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div id="quota-fill" class="progress-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
     </main>
+
+    <!-- GV Modal -->
+    <div id="gv-modal" class="modal">
+        <div class="modal-content">
+            <h2>Add/Edit Global Variable</h2>
+            <input type="text" id="gv-alias" placeholder="Variable Name (e.g. site_title)">
+            <textarea id="gv-value" placeholder="Variable Value (JSON or String)"></textarea>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeModal('gv-modal')">Cancel</button>
+                <button id="save-gv-btn" class="btn-primary">Save Variable</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Success Modal (for New Account) -->
     <div id="modal" class="modal">

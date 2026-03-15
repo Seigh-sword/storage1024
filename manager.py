@@ -10,10 +10,9 @@ from client import TelegramStorage
 TOKEN_PRIVATE = "private"
 TOKEN_PUBLIC = "public"
 
-# Load config from multiple potential locations
 config_paths = [
-    os.path.expanduser('~/.storage1024/config.env'), # Local dev (outside repo)
-    '.env' # Cloud hosting (injected by host)
+    os.path.expanduser('~/.storage1024/config.env'),
+    '.env'
 ]
 for path in config_paths:
     if os.path.exists(path):
@@ -21,18 +20,17 @@ for path in config_paths:
         break
 
 def generate_private_token():
-    # Create private token
     unique_id = str(uuid.uuid4())[:18]
     return f"s1024-{unique_id};qi="
 
 def generate_public_token():
-    # Create public token
-    return "".join(random.choices(string.ascii_letters + string.digits, k=32)) + ";gg="
+    rand_body = "".join(random.choices(string.ascii_letters + string.digits, k=28))
+    return f"s1024-{rand_body};gg="
 
 class ProjectManager:
     def __init__(self):
         self.storage = TelegramStorage()
-        self.index = {"projects": {}} # Initialize index
+        self.index = {"projects": {}}
 
     async def _load_index(self):
         await self.storage.connect()
@@ -42,7 +40,7 @@ class ProjectManager:
     async def validate_token(self, token):
         if not token: return None, None
         
-        await self._load_index() # Load index before validation
+        await self._load_index()
         
         for project_id, p in self.index.get("projects", {}).items():
             if token in p.get("tokens", {}).get("private", []):
@@ -89,8 +87,11 @@ class ProjectManager:
             print("Project not found.")
             return
             
-        message_id = await self.storage.upload_file(file_path, caption=f"Project: {project_id} | File: {alias}")
-        index['projects'][project_id]['files'][alias] = message_id
+        message_id = await self.storage.upload_file(file_path, caption=f"Project: {project_id} | File: {alias} | Size: {os.path.getsize(file_path)/(1024*1024):.2f}MB")
+        index['projects'][project_id]['files'][alias] = {
+            "id": message_id,
+            "size": os.path.getsize(file_path) / (1024 * 1024) # Store in MB
+        }
         
         await self.storage.update_index(index)
         await self.storage.disconnect()
@@ -128,6 +129,34 @@ class ProjectManager:
         await self.storage.update_index(index)
         await self.storage.disconnect()
         return new_token
+
+    async def delete_file_from_project(self, project_id, alias):
+        await self.storage.connect()
+        index = await self.storage.get_index()
+        if project_id in index['projects'] and alias in index['projects'][project_id]['files']:
+            del index['projects'][project_id]['files'][alias]
+            await self.storage.update_index(index)
+        await self.storage.disconnect()
+
+    async def delete_gv_from_project(self, project_id, alias):
+        await self.storage.connect()
+        index = await self.storage.get_index()
+        if project_id in index['projects'] and alias in index['projects'][project_id]['global_vars']:
+            del index['projects'][project_id]['global_vars'][alias]
+            await self.storage.update_index(index)
+        await self.storage.disconnect()
+
+    async def revoke_token_from_project(self, project_id, token):
+        await self.storage.connect()
+        index = await self.storage.get_index()
+        if project_id in index['projects']:
+            tokens = index['projects'][project_id]['tokens']
+            if token in tokens.get("private", []):
+                tokens["private"].remove(token)
+            elif token in tokens.get("public", []):
+                tokens["public"].remove(token)
+            await self.storage.update_index(index)
+        await self.storage.disconnect()
 
 async def main():
     import sys
