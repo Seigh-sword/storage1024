@@ -51,20 +51,28 @@
             <article class="project-card large">
                 <h3>🌐 REST API</h3>
                 <p class="meta">Endpoint specification for any language.</p>
-                <div class="api-list" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 10px;">
-                    <div class="item-row">
-                        <span class="item-name">GET /api/projects/{id}/gv</span>
-                        <span class="item-meta">Fetch all Variables</span>
+                    <div class="api-list" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 10px;">
+                        <div class="item-row">
+                            <span class="item-name">POST /api/projects/create</span>
+                            <span class="item-meta">Create Account</span>
+                        </div>
+                        <div class="item-row">
+                            <span class="item-name">GET /api/projects/{id}/gv</span>
+                            <span class="item-meta">Fetch all Variables</span>
+                        </div>
+                        <div class="item-row">
+                            <span class="item-name">POST /api/projects/{id}/tokens</span>
+                            <span class="item-meta">Generate Token</span>
+                        </div>
+                        <div class="item-row">
+                            <span class="item-name">POST /api/projects/{id}/upload</span>
+                            <span class="item-meta">Secure File Upload</span>
+                        </div>
+                        <div class="item-row">
+                            <span class="item-name">GET /files/{alias}</span>
+                            <span class="item-meta">Public CDN Link</span>
+                        </div>
                     </div>
-                    <div class="item-row">
-                        <span class="item-name">POST /api/projects/{id}/upload</span>
-                        <span class="item-meta">Secure File Upload</span>
-                    </div>
-                    <div class="item-row">
-                        <span class="item-name">GET /files/{alias}</span>
-                        <span class="item-meta">Public CDN Link</span>
-                    </div>
-                </div>
             </article>
         </div>
     </main>

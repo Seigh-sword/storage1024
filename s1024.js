@@ -56,5 +56,31 @@ const s1024 = {
         });
         if (!res.ok) throw new Error(`Upload failed: ${res.statusText}`);
         return await res.json();
+    },
+
+    async create_project(name) {
+        const res = await fetch(`${this.apiBase}/projects/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+        });
+        if (!res.ok) throw new Error(`Failed to create project: ${res.statusText}`);
+        const data = await res.json();
+        return data; // Returns {project_id, tokens: {private, public}}
+    },
+
+    async create_token(name, type = 'public') {
+        if (!this.token || !this.userID) throw new Error("Credentials missing");
+        const res = await fetch(`${this.apiBase}/projects/${this.userID}/tokens`, {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${this.token}`,
+                'Content-Type': 'application/json' 
+            },
+            body: JSON.stringify({ name, type })
+        });
+        if (!res.ok) throw new Error(`Failed to create token: ${res.statusText}`);
+        const data = await res.json();
+        return data.token;
     }
 };
