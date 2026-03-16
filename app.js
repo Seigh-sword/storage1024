@@ -57,17 +57,16 @@ function copyToken(elementId) {
 function setAppState(state) {
     const login = document.getElementById('login-state');
     const dashboard = document.getElementById('dashboard-state');
-    const nav = document.getElementById('nav-actions');
+    const logoutBtn = document.getElementById('logout-btn');
 
     if (state === 'dashboard') {
-        login.style.display = 'none';
-        dashboard.style.display = 'flex';
-        nav.innerHTML = '<button id="logout-btn" class="btn-secondary">Logout</button>';
-        document.getElementById('logout-btn').onclick = logout;
+        if (login) login.style.display = 'none';
+        if (dashboard) dashboard.style.display = 'flex';
+        if (logoutBtn) logoutBtn.style.display = 'inline-block';
     } else {
-        login.style.display = 'flex';
-        dashboard.style.display = 'none';
-        nav.innerHTML = '';
+        if (login) login.style.display = 'flex';
+        if (dashboard) dashboard.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'none';
     }
 }
 
@@ -370,3 +369,4 @@ document.getElementById('tab-signup').onclick = () => {
 
 checkHoliday();
 if (localStorage.getItem('s1024_token')) fetchAccountData();
+else setAppState('login');
