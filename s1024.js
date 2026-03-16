@@ -82,5 +82,19 @@ const s1024 = {
         if (!res.ok) throw new Error(`Failed to create token: ${res.statusText}`);
         const data = await res.json();
         return data.token;
+    },
+
+    async revoke_token(tokenToRevoke) {
+        if (!this.token || !this.userID) throw new Error("Credentials missing");
+        const res = await fetch(`${this.apiBase}/projects/${this.userID}/tokens/revoke`, {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${this.token}`,
+                'Content-Type': 'application/json' 
+            },
+            body: JSON.stringify({ token: tokenToRevoke })
+        });
+        if (!res.ok) throw new Error(`Failed to revoke token: ${res.statusText}`);
+        return await res.json();
     }
 };
