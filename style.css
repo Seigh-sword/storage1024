@@ -114,8 +114,9 @@ nav {
 }
 
 .logo img {
-    height: 32px;
-    width: 32px;
+    height: 48px;
+    width: 48px;
+    object-fit: contain;
 }
 
 .logo span {
@@ -161,6 +162,7 @@ header h1 {
     margin-bottom: 0.5rem;
     background: linear-gradient(to right, #fff, #94a3b8);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -404,17 +406,3 @@ textarea#gv-value {
     resize: vertical;
 }
 
-.progress-bar {
-    width: 100%;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--primary) 0%, #3b82f6 100%);
-    width: 0%;
-    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}

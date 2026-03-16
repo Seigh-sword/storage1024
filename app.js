@@ -46,18 +46,6 @@ function checkHoliday() {
     }
 }
 
-function checkTrace() {
-    if (localStorage.getItem('s1024_trace')) {
-        const signupBtn = document.getElementById('signup-btn');
-        if (signupBtn) {
-            signupBtn.disabled = true;
-            signupBtn.innerText = "Account limit reached";
-            signupBtn.title = "Only one account per device is allowed.";
-        }
-        return true;
-    }
-    return false;
-}
 
 function copyToken(elementId) {
     const text = document.getElementById(elementId).innerText;
@@ -228,28 +216,22 @@ function renderTokens(projectId, tokens = { private: [], public: [] }) {
 }
 
 function renderStats(p) {
-    const files = Object.values(p.files || {});
-    const fileCount = files.length;
+    const fileCount = Object.keys(p.files || {}).length;
     const gvCount = Object.keys(p.global_vars || {}).length;
     
-    // Calculate total size in MB (handle legacy strings vs new objects)
-    const totalSize = files.reduce((acc, f) => acc + (f.size || 0), 0);
-    const quotaUsed = Math.min(totalSize, 1800);
-    const pct = (quotaUsed / 1800) * 100;
-
-    document.getElementById('file-stats').innerHTML = `
-        <div style="font-size: 2.5rem; font-weight: 700;">${fileCount}</div> Files
-        <div style="font-size: 2.5rem; font-weight: 700; margin-top: 1rem;">${gvCount}</div> GVs
-    `;
+    // Minimalist info display
+    const statBox = document.createElement('div');
+    statBox.style.fontSize = '0.75rem';
+    statBox.style.opacity = '0.6';
+    statBox.style.marginTop = '10px';
+    statBox.innerText = `${fileCount} Files | ${gvCount} GVs`;
     
-    document.getElementById('quota-text').innerText = `${totalSize.toFixed(1)} / 1800 MB`;
-    document.getElementById('quota-fill').style.width = `${pct}%`;
-    
-    // Color coding for storage pressure
-    const fill = document.getElementById('quota-fill');
-    if (pct > 90) fill.style.background = '#ef4444';
-    else if (pct > 70) fill.style.background = '#f59e0b';
-    else fill.style.background = 'linear-gradient(90deg, var(--primary) 0%, #3b82f6 100%)';
+    // We append this to the project-info card instead of a dedicated card
+    const infoCard = document.getElementById('project-info');
+    const existing = infoCard.querySelector('.stat-summary');
+    if (existing) existing.remove();
+    statBox.className = 'stat-summary';
+    infoCard.appendChild(statBox);
 }
 
 async function deleteFile(id, alias) {
@@ -359,7 +341,6 @@ document.getElementById('signup-btn').onclick = async () => {
     });
     const data = await res.json();
     if (res.ok) {
-        localStorage.setItem('s1024_trace', 'true');
         document.getElementById('modal').style.display = 'flex';
         document.getElementById('modal-success').style.display = 'block';
         document.getElementById('success-priv').innerText = data.tokens.private;
@@ -388,5 +369,4 @@ document.getElementById('tab-signup').onclick = () => {
 };
 
 checkHoliday();
-checkTrace();
 if (localStorage.getItem('s1024_token')) fetchAccountData();

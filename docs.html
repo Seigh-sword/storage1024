@@ -11,8 +11,10 @@
     <nav class="glass-nav">
         <div class="nav-content">
             <div class="logo-area" onclick="location.href='/'">
-                <img id="dynamic-logo" src="/assets/icon.svg" alt="S1024" class="logo">
-                <span class="logo-text">Storage1024</span>
+                <div class="logo">
+                    <img id="dynamic-logo" src="/assets/icon.svg" alt="S1024 Logo">
+                    <span>Storage1024</span>
+                </div>
             </div>
             <div class="nav-links">
                 <a href="/">Dashboard</a>
@@ -34,9 +36,10 @@
                     <pre><code>&lt;script src="https://storage1024.onrender.com/s1024.js"&gt;&lt;/script&gt;
 &lt;script&gt;
     s1024.set_token('YOUR_PRIVATE_OR_PUBLIC_TOKEN');
+    s1024.set_userID('YOUR_ACCOUNT_ID');
     
     // Save a Global Variable
-    s1024.add_gv('theme', 'dark');
+    await s1024.add_gv('theme', 'dark');
 
     // Fetch a Global Variable
     const theme = await s1024.get_gv('theme');
@@ -88,7 +91,6 @@
             margin-top: 1rem;
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
-        code { color: var(--primary); font-family: 'Courier New', monospace; }
         .api-endpoint { margin: 1rem 0; font-size: 0.9rem; }
         .method { padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.7rem; margin-right: 8px; }
         .get { background: #3b82f6; }
