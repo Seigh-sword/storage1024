@@ -5,104 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Storage1024 | Documentation</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="/assets/icon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" type="image/svg+xml" href="/assets/icon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="minimalist">
-    <nav class="glass-nav">
-        <div class="nav-content">
-            <div class="logo-area" onclick="location.href='/'">
-                <div class="logo">
-                    <img id="dynamic-logo" src="/assets/icon.svg" alt="S1024 Logo">
-                    <span>Storage1024</span>
-                </div>
+    <div class="glass-bg"></div>
+    
+    <nav>
+        <div class="logo-area" onclick="location.href='/'" style="cursor: pointer;">
+            <div class="logo">
+                <img id="dynamic-logo" src="/assets/icon.svg" alt="S1024 Logo">
+                STORAGE<span>1024</span>
             </div>
-            <div class="nav-links">
-                <a href="/">Dashboard</a>
-            </div>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="btn-secondary" style="text-decoration: none;">Dashboard</a>
         </div>
     </nav>
 
-    <main class="container">
-        <section class="docs-section">
-            <header class="section-header">
-                <h1>Documentation</h1>
-                <p class="meta">Official guide for developers and integrators.</p>
-            </header>
+    <main class="hero" style="max-width: 1000px; text-align: left; padding-top: 50px;">
+        <header>
+            <h1>Developer Guide</h1>
+            <p>High-performance integration for your secure storage.</p>
+        </header>
 
-            <div class="docs-grid">
-                <article class="doc-card">
-                    <h2>📦 s1024.js Library</h2>
-                    <p>The fastest way to integrate Storage1024 into your web apps.</p>
-                    <pre><code>&lt;script src="https://storage1024.onrender.com/s1024.js"&gt;&lt;/script&gt;
+        <div class="docs-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; margin-top: 3rem;">
+            <article class="project-card large">
+                <h3>📦 JS Library (s1024.js)</h3>
+                <p class="meta">The easiest way to power your frontend.</p>
+                <div class="code-block" style="margin-top: 1rem;">
+                    <pre><code>&lt;script src="/s1024.js"&gt;&lt;/script&gt;
 &lt;script&gt;
-    s1024.set_token('YOUR_PRIVATE_OR_PUBLIC_TOKEN');
-    s1024.set_userID('YOUR_ACCOUNT_ID');
-    
-    // Save a Global Variable
-    await s1024.add_gv('theme', 'dark');
+  s1024.set_userID('YOUR_ID');
+  s1024.set_token('YOUR_TOKEN');
 
-    // Fetch a Global Variable
-    const theme = await s1024.get_gv('theme');
-    console.log(theme); // 'dark'
+  // Async/Await support
+  const bg = await s1024.get_gv('bg_color');
+  document.body.style.background = bg;
 &lt;/script&gt;</code></pre>
-                </article>
+                </div>
+            </article>
 
-                <article class="doc-card">
-                    <h2>🌐 REST API</h2>
-                    <p>Direct HTTP endpoints for any language.</p>
-                    <div class="api-endpoint">
-                        <span class="method get">GET</span> <code>/projects/{id}/gv/{alias}</code>
+            <article class="project-card large">
+                <h3>🌐 REST API</h3>
+                <p class="meta">Endpoint specification for any language.</p>
+                <div class="api-list" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 10px;">
+                    <div class="item-row">
+                        <span class="item-name">GET /api/projects/{id}/gv</span>
+                        <span class="item-meta">Fetch all Variables</span>
                     </div>
-                    <div class="api-endpoint">
-                        <span class="method post">POST</span> <code>/projects/{id}/upload</code>
+                    <div class="item-row">
+                        <span class="item-name">POST /api/projects/{id}/upload</span>
+                        <span class="item-meta">Secure File Upload</span>
                     </div>
-                    <div class="api-endpoint">
-                        <span class="method delete">DELETE</span> <code>/projects/{id}/files/{alias}</code>
+                    <div class="item-row">
+                        <span class="item-name">GET /files/{alias}</span>
+                        <span class="item-meta">Public CDN Link</span>
                     </div>
-                </article>
-
-                <article class="doc-card">
-                    <h2>🔐 Security Levels</h2>
-                    <ul>
-                        <li><strong>Private Tokens (;qi=)</strong>: Full access. Dashboard login, token generation, deletion.</li>
-                        <li><strong>Public Tokens (;gg=)</strong>: Restricted. Can upload and fetch GVs, but cannot delete or revoke.</li>
-                    </ul>
-                </article>
-            </div>
-        </section>
+                </div>
+            </article>
+        </div>
     </main>
 
     <style>
-        .docs-section { margin-top: 4rem; }
-        .docs-grid { display: grid; gap: 2rem; margin-top: 2rem; }
-        .doc-card { 
-            background: rgba(255, 255, 255, 0.02); 
-            border: 1px solid var(--glass-border); 
-            padding: 2rem; 
-            border-radius: 24px; 
-            backdrop-filter: blur(10px);
+        .code-block {
+            background: rgba(0,0,0,0.3);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            overflow-x: auto;
         }
-        pre { 
-            background: rgba(0, 0, 0, 0.3); 
-            padding: 1.5rem; 
-            border-radius: 12px; 
-            overflow-x: auto; 
-            font-size: 0.85rem;
-            margin-top: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .api-endpoint { margin: 1rem 0; font-size: 0.9rem; }
-        .method { padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.7rem; margin-right: 8px; }
-        .get { background: #3b82f6; }
-        .post { background: #10b981; }
-        .delete { background: #ef4444; }
-        ul { margin-top: 1rem; padding-left: 1.5rem; color: var(--text-muted); line-height: 1.6; }
+        pre { margin: 0; }
+        code { font-family: 'Courier New', monospace; color: var(--primary); font-size: 0.85rem; }
     </style>
 
     <script src="app.js"></script>
     <script>
-        // Ensure theme applies to docs too
-        window.onload = () => checkHoliday();
+        checkHoliday();
     </script>
 </body>
 </html>

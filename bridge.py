@@ -185,12 +185,13 @@ async def add_gv(project_id: str, data: Request, auth: tuple = Depends(validate_
         await asyncio.sleep(1) # GV penalty AFTER set
     return {"status": "success"}
 
-@app.get("/api/projects/{project_id}/gv/{alias}")
-async def get_gv(project_id: str, alias: str, auth: tuple = Depends(validate_token)):
+@app.get("/api/projects/{project_id}/gv")
+async def list_gvs(project_id: str, auth: tuple = Depends(validate_token)):
     auth_project_id, token_type = auth
     if auth_project_id != project_id:
         raise HTTPException(status_code=403, detail="Token does not match project_id")
     check_access(token_type, "get_gv")
+    
     await manager.storage.connect()
     try:
         index = await manager.storage.get_index()
@@ -198,13 +199,16 @@ async def get_gv(project_id: str, alias: str, auth: tuple = Depends(validate_tok
         if not project:
             raise HTTPException(status_code=404, detail="Project not found")
         
-        msg_id = project['global_vars'].get(alias)
-        if not msg_id:
-            raise HTTPException(status_code=404, detail="GV not found")
-            
-        msg = await manager.storage.client.get_messages(manager.storage.channel_id, ids=msg_id)
-        value = msg.text.split(": ", 1)[-1] if msg and msg.text else None
-        return {"alias": alias, "value": value}
+        gv_map = {}
+        vars = project.get('global_vars', {})
+        for alias, msg_id in vars.items():
+            try:
+                msg = await manager.storage.client.get_messages(manager.storage.channel_id, ids=msg_id)
+                value = msg.text.split(": ", 1)[-1] if msg and msg.text else None
+                gv_map[alias] = value
+            except:
+                gv_map[alias] = None
+        return gv_map
     finally:
         await manager.storage.disconnect()
 

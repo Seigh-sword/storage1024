@@ -37,14 +37,11 @@ const s1024 = {
 
     async gv_json() {
         if (!this.token || !this.userID) throw new Error("Credentials missing");
-        const res = await fetch(`${this.apiBase}/index`, {
+        const res = await fetch(`${this.apiBase}/projects/${this.userID}/gv`, {
             headers: { 'Authorization': `Bearer ${this.token}` }
         });
-        if (!res.ok) throw new Error(`Failed to fetch Index: ${res.statusText}`);
-        const data = await res.json();
-        const project = data.projects[this.userID];
-        if (!project) throw new Error("Project not found in account index");
-        return project.global_vars || {};
+        if (!res.ok) throw new Error(`Failed to fetch GVs: ${res.statusText}`);
+        return await res.json();
     },
 
     async upload_file(fileAlias, fileBlob) {
