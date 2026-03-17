@@ -18,7 +18,7 @@ for path in config_paths:
         load_dotenv(path)
         break
 
-app = FastAPI(title="Storage1024 API Bridge")
+app = FastAPI(title="Storage1024 API Bridge", docs_url=None, redoc_url=None)
 security = HTTPBearer()
 
 TOKEN_PRIVATE = "private"
@@ -247,6 +247,7 @@ async def revoke_token(project_id: str, data: Request, auth: tuple = Depends(val
     return {"status": "success"}
 
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")
+app.mount("/docs/static", StaticFiles(directory="docs"), name="docs_static") # Support relative assets in docs/
 
 from fastapi.responses import FileResponse
 
@@ -264,7 +265,7 @@ async def read_css():
 
 @app.get("/s1024.js")
 async def read_sdk():
-    return FileResponse("s1024.js")
+    return FileResponse("libraries/cdn.js")
 
 @app.get("/files")
 async def files_redirect():
@@ -272,7 +273,15 @@ async def files_redirect():
 
 @app.get("/docs")
 async def read_docs():
-    return FileResponse("docs.html")
+    return FileResponse("docs/index.html")
+
+@app.get("/docs/{path:path}")
+async def read_docs_assets(path: str):
+    # Serve css/js from top-level if needed, or specific docs assets
+    if path == "style.css": return FileResponse("style.css")
+    if os.path.exists(f"docs/{path}"):
+        return FileResponse(f"docs/{path}")
+    return FileResponse("docs/index.html")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
