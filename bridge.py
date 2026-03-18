@@ -270,16 +270,19 @@ async def read_sdk():
 async def files_redirect():
     return FileResponse("index.html")
 
+app.mount("/docs/assets", StaticFiles(directory="docs"), name="docs_assets")
+
+from fastapi.responses import FileResponse, RedirectResponse
+
 @app.get("/docs")
 async def read_docs():
     return FileResponse("docs/index.html")
 
 @app.get("/docs/{path:path}")
 async def read_docs_assets(path: str):
-    
-    if path == "style.css": return FileResponse("style.css")
-    if os.path.exists(f"docs/{path}"):
-        return FileResponse(f"docs/{path}")
+    full_path = f"docs/{path}"
+    if os.path.exists(full_path) and os.path.isfile(full_path):
+        return FileResponse(full_path)
     return FileResponse("docs/index.html")
 
 if __name__ == "__main__":
