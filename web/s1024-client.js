@@ -5,10 +5,7 @@ class Storage1024 {
         this.apiBase = config.apiBase || 'http://127.0.0.1:8000/api';
     }
 
-    /**
-     * Uploads a file to the project.
-     * Note: This requires the bridge.py to be running.
-     */
+    
     async uploadFile(file, alias) {
         const formData = new FormData();
         formData.append('file', file);
@@ -25,9 +22,7 @@ class Storage1024 {
         return await response.json();
     }
 
-    /**
-     * Gets a Global Variable value by alias.
-     */
+    
     async getGV(alias) {
         const response = await fetch(`${this.apiBase}/projects/${this.projectId}/gv/${alias}`, {
             headers: { 'Authorization': `Bearer ${this.token}` }
@@ -35,9 +30,7 @@ class Storage1024 {
         return await response.json();
     }
 
-    /**
-     * Stores a Global Variable.
-     */
+    
     async setGV(alias, value) {
         const response = await fetch(`${this.apiBase}/projects/${this.projectId}/gv`, {
             method: 'POST',
@@ -51,5 +44,5 @@ class Storage1024 {
     }
 }
 
-// Export for usage
+
 window.Storage1024 = Storage1024;

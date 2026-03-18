@@ -157,8 +157,8 @@ function renderFiles(projectId, files) {
                 <span class="item-meta">ID: ${msgId} | ${size}</span>
             </div>
             <div class="item-actions">
-                <button class="btn-secondary" onclick="copyLink('${alias}')">🔗</button>
-                <button class="btn-secondary" onclick="deleteFile('${projectId}', '${alias}')">🗑️</button>
+                <button class="btn-secondary" onclick="copyLink('${alias}')"></button>
+                <button class="btn-secondary" onclick="deleteFile('${projectId}', '${alias}')">️</button>
             </div>
         `;
         list.appendChild(row);
@@ -179,8 +179,8 @@ function renderGVs(projectId, gvs) {
                 <span class="item-meta">ID: ${msgId}</span>
             </div>
             <div class="item-actions">
-                <button class="btn-secondary" onclick="showEditGVModal('${projectId}', '${alias}')">📝</button>
-                <button class="btn-secondary" onclick="deleteGV('${projectId}', '${alias}')">🗑️</button>
+                <button class="btn-secondary" onclick="showEditGVModal('${projectId}', '${alias}')"></button>
+                <button class="btn-secondary" onclick="deleteGV('${projectId}', '${alias}')">️</button>
             </div>
         `;
         list.appendChild(row);
@@ -206,8 +206,8 @@ function renderTokens(projectId, tokens = { private: [], public: [] }) {
                 <span class="item-meta">${t.slice(0, 10)}...${t.slice(-8)} ${isCurrent ? '(Active)' : ''}</span>
             </div>
             <div class="item-actions">
-                <button class="btn-secondary" onclick="copyText('${t}')">📋</button>
-                ${!isCurrent ? `<button class="btn-secondary" onclick="revokeToken('${projectId}', '${t}')">🚫</button>` : ''}
+                <button class="btn-secondary" onclick="copyText('${t}')"></button>
+                ${!isCurrent ? `<button class="btn-secondary" onclick="revokeToken('${projectId}', '${t}')"></button>` : ''}
             </div>
         `;
         list.appendChild(row);
@@ -218,14 +218,14 @@ function renderStats(p) {
     const fileCount = Object.keys(p.files || {}).length;
     const gvCount = Object.keys(p.global_vars || {}).length;
     
-    // Minimalist info display
+    
     const statBox = document.createElement('div');
     statBox.style.fontSize = '0.75rem';
     statBox.style.opacity = '0.6';
     statBox.style.marginTop = '10px';
     statBox.innerText = `${fileCount} Files | ${gvCount} GVs`;
     
-    // We append this to the project-info card instead of a dedicated card
+    
     const infoCard = document.getElementById('project-info');
     const existing = infoCard.querySelector('.stat-summary');
     if (existing) existing.remove();

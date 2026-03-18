@@ -1,0 +1,108 @@
+:root {
+    --primary: #a78bfa;
+    --primary-rgb: 167, 139, 250;
+    --primary-glow: rgba(167, 139, 250, 0.4);
+    --bg: #0b0b0f;
+    --glass-bg: rgba(20, 20, 25, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text: #ffffff;
+    --text-dim: #94a3b8;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: 'Outfit', sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+}
+
+.glass-bg {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(circle at 50% 50%, #1e1b4b 0%, #0b0b0f 100%);
+    z-index: -1;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 4rem;
+    background: rgba(11, 11, 15, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--glass-border);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    font-size: 1.2rem;
+}
+
+.logo img { height: 32px; filter: drop-shadow(0 0 8px var(--primary-glow)); }
+.logo span { color: var(--primary); }
+
+.nav-links { display: flex; align-items: center; gap: 2rem; }
+
+.btn-secondary {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text);
+    padding: 8px 18px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px var(--primary-glow);
+}
+
+.docs-hero { padding: 120px 0 60px; text-align: center; }
+.docs-hero h1 { font-size: 3.8rem; margin: 0; background: linear-gradient(135deg, #fff 0%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.docs-hero p { font-size: 1.1rem; color: var(--text-dim); max-width: 600px; margin: 15px auto 0; }
+
+.docs-layout { display: grid; grid-template-columns: 240px 1fr; gap: 3rem; max-width: 1300px; margin: 0 auto; padding: 0 2rem 6rem; align-items: start; }
+
+.docs-sidebar { position: sticky; top: 120px; display: flex; flex-direction: column; gap: 6px; }
+.sidebar-group { font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; padding: 20px 12px 10px; opacity: 0.6; }
+.sidebar-link { display: block; padding: 10px 14px; border-radius: 12px; color: var(--text-dim); text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: all 0.2s; cursor: pointer; border: none; background: none; text-align: left; }
+.sidebar-link:hover, .sidebar-link.active { background: rgba(var(--primary-rgb), 0.15); color: var(--primary); }
+
+.docs-content {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 3rem;
+    min-height: 500px;
+}
+
+.markdown-body h1 { font-size: 2.2rem; margin: 0 0 1rem; }
+.markdown-body h2 { font-size: 1.6rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; margin-top: 2rem; }
+.markdown-body h3 { font-size: 1.2rem; color: var(--primary); margin-top: 1.5rem; }
+.markdown-body p { color: var(--text-dim); line-height: 1.8; margin: 1rem 0; }
+.markdown-body blockquote { border-left: 4px solid var(--primary); padding: 1rem 1.5rem; background: rgba(var(--primary-rgb), 0.05); border-radius: 0 16px 16px 0; font-style: italic; color: var(--text-dim); margin: 1.5rem 0; }
+.markdown-body code { font-family: 'Courier New', monospace; background: rgba(255, 255, 255, 0.08); padding: 2px 6px; border-radius: 6px; font-size: 0.9em; color: var(--primary); }
+.markdown-body pre { background: #000; padding: 1.5rem; border-radius: 16px; border: 1px solid var(--glass-border); overflow-x: auto; margin: 1.5rem 0; }
+.markdown-body pre code { background: none; padding: 0; color: #e2e8f0; font-size: 0.85rem; }
+
+@media (max-width: 900px) {
+    .docs-layout { grid-template-columns: 1fr; }
+    .docs-sidebar { position: static; flex-direction: row; flex-wrap: wrap; margin-bottom: 2rem; }
+    .sidebar-group { display: none; }
+}

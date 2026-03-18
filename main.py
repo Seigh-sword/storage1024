@@ -5,10 +5,10 @@ import os
 from dotenv import load_dotenv
 from client import TelegramStorage
 
-# Load config from multiple potential locations
+
 config_paths = [
-    os.path.expanduser('~/.storage1024/config.env'), # Local dev (outside repo)
-    '.env' # Cloud hosting (injected by host)
+    os.path.expanduser('~/.storage1024/config.env'), 
+    '.env' 
 ]
 for path in config_paths:
     if os.path.exists(path):
@@ -50,16 +50,16 @@ def main():
     parser = argparse.ArgumentParser(description="Storage1024: Telegram-based File Storage")
     subparsers = parser.add_subparsers(dest="command")
 
-    # Upload command
+    
     upload_parser = subparsers.add_parser("upload", help="Upload a file")
     upload_parser.add_argument("file", help="Path to the file to upload")
     upload_parser.add_argument("--caption", "-c", help="Optional caption for the file")
 
-    # List command
+    
     list_parser = subparsers.add_parser("list", help="List files in the channel")
     list_parser.add_argument("--limit", "-l", type=int, default=20, help="Number of files to list")
 
-    # Download command
+    
     download_parser = subparsers.add_parser("download", help="Download a file")
     download_parser.add_argument("id", type=int, help="Message ID of the file to download")
     download_parser.add_argument("--output", "-o", help="Optional output path")

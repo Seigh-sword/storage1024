@@ -5,10 +5,10 @@ from telethon.sessions import StringSession
 from telethon.tl.types import MessageMediaDocument
 from dotenv import load_dotenv
 
-# Load config from multiple potential locations
+
 config_paths = [
-    os.path.expanduser('~/.storage1024/config.env'), # Local dev (outside repo)
-    '.env' # Cloud hosting (injected by host)
+    os.path.expanduser('~/.storage1024/config.env'), 
+    '.env' 
 ]
 for path in config_paths:
     if os.path.exists(path):
@@ -20,7 +20,7 @@ class TelegramStorage:
         self.api_id = os.getenv('API_ID')
         self.api_hash = os.getenv('API_HASH')
         
-        # Look for session string in env or file
+        
         self.session_str = os.getenv('TELEGRAM_SESSION')
         if not self.session_str:
             session_path = os.path.expanduser('~/.storage1024/storage.session_string')
@@ -88,7 +88,7 @@ class TelegramStorage:
             message = await self.client.get_messages(self.channel_id, ids=message_id)
             if message and message.text:
                 import json
-                # Handle the user's requested header
+                
                 content = message.text.split('——\nIndex\n——\n')[-1]
                 return json.loads(content)
         except Exception as e:

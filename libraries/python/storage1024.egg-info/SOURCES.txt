@@ -1,0 +1,9 @@
+README.md
+pyproject.toml
+storage1024/__init__.py
+storage1024/client.py
+storage1024.egg-info/PKG-INFO
+storage1024.egg-info/SOURCES.txt
+storage1024.egg-info/dependency_links.txt
+storage1024.egg-info/requires.txt
+storage1024.egg-info/top_level.txt

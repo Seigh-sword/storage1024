@@ -10,7 +10,7 @@
     --accent: #ffffff;
 }
 
-/* Birthday Theme (March 15) */
+
 body.birthday {
     --primary: #f59e0b;
     --primary-glow: rgba(245, 158, 11, 0.2);
@@ -19,42 +19,42 @@ body.birthday {
 }
 
 body.birthday .logo::after {
-    content: ' 🎂';
+    content: ' ';
     font-size: 1rem;
 }
 
-/* Pride Theme (June) */
+
 body.pride {
     --primary: #ec4899;
     --primary-glow: rgba(236, 72, 153, 0.2);
     background: linear-gradient(135deg, #050505 80%, rgba(236, 72, 153, 0.05) 100%);
 }
 
-/* Finance Month (February) */
+
 body.finance-month {
     --primary: #10b981;
     --primary-glow: rgba(16, 185, 129, 0.2);
     --accent: #f59e0b;
 }
 
-/* April Fools (April 1) */
+
 body.april-fools {
     filter: invert(1) hue-rotate(180deg);
 }
 
-/* User's Birthday (May 27) */
+
 body.user-birthday {
     --primary: #f472b6;
     --primary-glow: rgba(244, 114, 182, 0.2);
 }
 
-/* Halloween (October) */
+
 body.halloween {
     --primary: #f97316;
     --primary-glow: rgba(249, 115, 22, 0.2);
 }
 
-/* Hide pseudo-elements if using direct SVG replacement */
+
 body.birthday .logo::after,
 body.finance-month .logo::after,
 body.user-birthday .logo::after,
@@ -63,7 +63,7 @@ body.halloween .logo::after {
 }
 
 body.christmas .logo::before {
-    content: '🎅 ';
+    content: ' ';
     font-size: 1.2rem;
 }
 
@@ -233,7 +233,7 @@ header p {
     word-break: break-all;
 }
 
-/* Modal */
+
 .modal {
     display: none;
     position: fixed;
@@ -247,7 +247,7 @@ header p {
     justify-content: center;
 }
 
-/* Landing Page States */
+
 #login-state, #dashboard-state {
     display: none;
     flex-direction: column;
@@ -281,7 +281,7 @@ header p {
     margin: 0 auto;
 }
 
-/* Toast System */
+
 #toast-container {
     position: fixed;
     bottom: 30px;
@@ -315,7 +315,7 @@ header p {
     to { transform: translateX(0); opacity: 1; }
 }
 
-/* Modal Enhancements */
+
 .token-generator-form {
     display: flex;
     flex-direction: column;
@@ -340,7 +340,7 @@ header p {
     margin: 0;
 }
 
-/* Dashboard Component Enhancements */
+
 .card-header {
     display: flex;
     justify-content: space-between;

@@ -90,7 +90,7 @@ class ProjectManager:
         message_id = await self.storage.upload_file(file_path, caption=f"Project: {project_id} | File: {alias} | Size: {os.path.getsize(file_path)/(1024*1024):.2f}MB")
         index['projects'][project_id]['files'][alias] = {
             "id": message_id,
-            "size": os.path.getsize(file_path) / (1024 * 1024) # Store in MB
+            "size": os.path.getsize(file_path) / (1024 * 1024) 
         }
         
         await self.storage.update_index(index)

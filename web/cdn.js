@@ -1,7 +1,4 @@
-/**
- * Storage1024 CDN Client
- * Load this via: <script src="https://raw.githubusercontent.com/Seigh-sword/storage1024/main/web/cdn.js"></script>
- */
+
 const Storage1024 = (function() {
     class Client {
         constructor(config) {
@@ -45,4 +42,4 @@ const Storage1024 = (function() {
 })();
 
 window.Storage1024 = Storage1024;
-console.log("Storage1024 CDN Loaded 🚀");
+console.log("Storage1024 CDN Loaded ");

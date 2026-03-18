@@ -4,10 +4,10 @@ from telethon import TelegramClient
 from telethon.sessions import StringSession
 from dotenv import load_dotenv
 
-# Load config from multiple potential locations
+
 config_paths = [
-    os.path.expanduser('~/.storage1024/config.env'), # Local dev (outside repo)
-    '.env' # Cloud hosting (injected by host)
+    os.path.expanduser('~/.storage1024/config.env'), 
+    '.env' 
 ]
 for path in config_paths:
     if os.path.exists(path):
@@ -43,7 +43,7 @@ async def main():
         print("-" * 20)
         print("="*50)
         
-        # Also save to a file for local use
+        
         with open('storage.session_string', 'w') as f:
             f.write(session_str)
         print("\nSession string also saved to 'storage.session_string'")

@@ -161,7 +161,6 @@ async def upload_project_file(
     try:
         async with queue_manager.lock:
             await manager.add_file_to_project(project_id, alias, temp_path)
-            # Penalize AFTER the work is done, blocking the next user in line
             await asyncio.sleep(delay)
         return {"status": "success", "alias": alias}
     finally:
@@ -183,7 +182,7 @@ async def add_gv(project_id: str, data: Request, auth: tuple = Depends(validate_
         
     async with queue_manager.lock:
         await manager.add_gv_to_project(project_id, alias, value)
-        await asyncio.sleep(1) # GV penalty AFTER set
+        await asyncio.sleep(1) 
     return {"status": "success"}
 
 @app.get("/api/projects/{project_id}/gv")
@@ -247,7 +246,7 @@ async def revoke_token(project_id: str, data: Request, auth: tuple = Depends(val
     return {"status": "success"}
 
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")
-app.mount("/docs/static", StaticFiles(directory="docs"), name="docs_static") # Support relative assets in docs/
+app.mount("/docs/static", StaticFiles(directory="docs"), name="docs_static") 
 
 from fastapi.responses import FileResponse
 
@@ -277,7 +276,7 @@ async def read_docs():
 
 @app.get("/docs/{path:path}")
 async def read_docs_assets(path: str):
-    # Serve css/js from top-level if needed, or specific docs assets
+    
     if path == "style.css": return FileResponse("style.css")
     if os.path.exists(f"docs/{path}"):
         return FileResponse(f"docs/{path}")

@@ -1,0 +1,36 @@
+Metadata-Version: 2.4
+Name: storage1024
+Version: 1.0.0
+Summary: Premium High-performance object storage client library for Python.
+Author-email: Seigh-sword <zack.yt.7085@gmail.com>
+Project-URL: Homepage, https://storage1024.onrender.com
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+Requires-Dist: requests>=2.25.0
+
+# Storage1024 Python Client
+
+Native Python client for Storage1024.
+
+## Installation
+
+```bash
+pip install storage1024
+```
+
+## Usage
+
+```python
+from storage1024 import Storage1024
+
+s1024 = Storage1024()
+s1024.set_userid("YOUR_ID")
+s1024.set_token("YOUR_TOKEN")
+
+# Get a global variable
+val = s1024.get_gv("my_var")
+print(val)
+```

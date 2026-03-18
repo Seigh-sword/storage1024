@@ -3,213 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Storage1024 | API Documentation</title>
-    <link rel="stylesheet" href="/style.css">
+    <title>Storage1024 | Developer Documentation</title>
+    <meta name="description" content="Integrate Storage1024 into any project. Polyglot SDK documentation.">
+    <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="icon" type="image/svg+xml" href="/assets/icon.svg">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <style>
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 1rem;
-            border-bottom: 1px solid var(--glass-border);
-            padding-bottom: 10px;
-            overflow-x: auto;
-            white-space: nowrap;
-        }
-        .tab-btn {
-            background: none;
-            border: none;
-            color: var(--text-dim);
-            font-weight: 600;
-            padding: 5px 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.8rem;
-        }
-        .tab-btn.active {
-            color: var(--primary);
-            border-bottom: 2px solid var(--primary);
-        }
-        .code-container {
-            display: none;
-        }
-        .code-container.active {
-            display: block;
-        }
-        .code-block {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 1.5rem;
-            border-radius: 12px;
-            border: 1px solid var(--glass-border);
-            font-family: 'Courier New', monospace;
-            font-size: 0.85rem;
-            color: var(--primary);
-            overflow-x: auto;
-            position: relative;
-        }
-        .code-block::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(circle at top left, var(--primary-glow) 0%, transparent 40%);
-            pointer-events: none;
-            opacity: 0.3;
-        }
-        pre { margin: 0; position: relative; z-index: 1; }
-        .npm-badge {
-            display: inline-block;
-            background: var(--primary);
-            color: var(--bg);
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 800;
-            margin-left: 10px;
-            vertical-align: middle;
-        }
-    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body class="minimalist">
     <div class="glass-bg"></div>
-    
     <nav>
-        <div class="logo-area" onclick="location.href='/'" style="cursor: pointer;">
+        <div class="logo-area" onclick="location.href='/'" style="cursor:pointer">
             <div class="logo">
-                <img id="dynamic-logo" src="/assets/icon.svg" alt="S1024 Logo">
+                <img src="/assets/icon.svg" alt="S1024 Logo">
                 STORAGE<span>1024</span>
             </div>
         </div>
         <div class="nav-links">
-            <a href="/" class="btn-secondary" style="text-decoration: none; margin-right: 15px;">Dashboard</a>
-            <button id="logout-btn" class="btn-secondary" style="font-size: 0.8rem; padding: 6px 12px; display: none;" onclick="logout()">Logout</button>
+            <a href="/" class="btn-secondary" style="text-decoration:none">Dashboard</a>
         </div>
     </nav>
 
-    <main class="hero" style="max-width: 1200px; text-align: left; padding-top: 20px;">
-        <header>
-            <h1 style="font-size: 3.5rem;">Polyglot Integration</h1>
-            <p>Connect from anything, anywhere. Secure, fast, and unified.</p>
-        </header>
+    <div class="docs-hero">
+        <h1>Developer Docs</h1>
+        <p>Unified storage and variables for any language on any platform.</p>
+    </div>
 
-        <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 2rem; margin-top: 2rem;">
-         
-            <article class="project-card large">
-                <div class="card-header">
-                    <h3>📦 Software SDKs</h3>
-                    <div class="npm-badge">CDN & NPM READY</div>
-                </div>
-                <p class="meta">Native support for Browser (CDN) and Node.js (libraries/).</p>
-                
-                <div class="tabs">
-                    <button class="tab-btn active" onclick="showTab(this, 'js-sample')">Browser</button>
-                    <button class="tab-btn" onclick="showTab(this, 'react-sample')">React/TS</button>
-                    <button class="tab-btn" onclick="showTab(this, 'node-sample')">Node.js</button>
-                    <button class="tab-btn" onclick="showTab(this, 'cpp-sample')">C/C++</button>
-                    <button class="tab-btn" onclick="showTab(this, 'python-sample')">Python</button>
-                    <button class="tab-btn" onclick="showTab(this, 'curl-sample')">cURL</button>
-                </div>
+    <div class="docs-layout">
+        <aside class="docs-sidebar">
+            <span class="sidebar-group">Basics</span>
+            <button class="sidebar-link active" onclick="loadDoc('story', this)">Why Storage1024</button>
+            <span class="sidebar-group">Software SDKs</span>
+            <button class="sidebar-link" onclick="loadDoc('python', this)">Python</button>
+            <button class="sidebar-link" onclick="loadDoc('go', this)">Go</button>
+            <button class="sidebar-link" onclick="loadDoc('rust', this)">Rust</button>
+            <button class="sidebar-link" onclick="loadDoc('php', this)">PHP</button>
+            <button class="sidebar-link" onclick="loadDoc('js', this)">Browser / JS</button>
+            <button class="sidebar-link" onclick="loadDoc('node', this)">Node.js</button>
+            <button class="sidebar-link" onclick="loadDoc('ts', this)">TypeScript / React</button>
+            <button class="sidebar-link" onclick="loadDoc('cpp', this)">C / C++</button>
+            <button class="sidebar-link" onclick="loadDoc('csharp', this)">C#</button>
+            <button class="sidebar-link" onclick="loadDoc('java', this)">Java</button>
+            <button class="sidebar-link" onclick="loadDoc('ruby', this)">Ruby</button>
+            <span class="sidebar-group">Shell & Scripting</span>
+            <button class="sidebar-link" onclick="loadDoc('curl', this)">cURL</button>
+            <button class="sidebar-link" onclick="loadDoc('bash', this)">Bash</button>
+            <button class="sidebar-link" onclick="loadDoc('powershell', this)">PowerShell</button>
+        </aside>
 
-                <div id="js-sample" class="code-container active">
-                    <div class="code-block">
-                        <pre><code>&lt;script src="/s1024.js"&gt;&lt;/script&gt;
-&lt;script&gt;
-  s1024.set_userID('YOUR_ID');
-  s1024.set_token('YOUR_TOKEN');
-  const gvs = await s1024.gv_json();
-&lt;/script&gt;</code></pre>
-                    </div>
-                </div>
+        <main id="doc-content" class="docs-content markdown-body">
+            
+            <div style="display:flex; justify-content:center; align-items:center; height:100%; opacity:0.5">
+                Loading...
+            </div>
+        </main>
+    </div>
 
-                <div id="react-sample" class="code-container">
-                    <div class="code-block">
-                        <pre><code>import { s1024 } from 'storage1024';
-
-function App() {
-  useEffect(() => {
-    s1024.set_userID('ID');
-    s1024.set_token('TOKEN');
-  }, []);
-  // ... rest of your code
-}</code></pre>
-                    </div>
-                </div>
-
-                <div id="node-sample" class="code-container">
-                    <div class="code-block">
-                        <pre><code>// Using libraries/s1024/s1024.js
-const s1024 = require('./libraries/s1024/s1024');
-
-s1024.set_userID('YOUR_ID');
-s1024.set_token('YOUR_TOKEN');
-const data = await s1024.gv_json();</code></pre>
-                    </div>
-                </div>
-
-                <div id="cpp-sample" class="code-container">
-                    <div class="code-block">
-                        <pre><code>// Using libcurl
-CURL *curl = curl_easy_init();
-struct curl_slist *headers = NULL;
-headers = curl_slist_append(headers, "Authorization: Bearer TOKEN");
-curl_easy_setopt(curl, CURLOPT_URL, "https://storage1024.onrender.com/api/projects/ID/gv");
-curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-curl_easy_perform(curl);</code></pre>
-                    </div>
-                </div>
-
-                <div id="python-sample" class="code-container">
-                    <div class="code-block">
-                        <pre><code>import requests
-headers = {"Authorization": "Bearer TOKEN"}
-res = requests.get("https://.../api/projects/ID/gv", headers=headers)
-print(res.json())</code></pre>
-                    </div>
-                </div>
-
-                <div id="curl-sample" class="code-container">
-                    <div class="code-block">
-                        <pre><code>curl -X GET https://.../api/projects/ID/gv \
-     -H "Authorization: Bearer TOKEN"</code></pre>
-                    </div>
-                </div>
-            </article>
-
-            <!-- API Specs Only -->
-            <article class="project-card large">
-                <div class="card-header">
-                    <h3>🌐 REST API</h3>
-                </div>
-                <p class="meta">Unified endpoints for any custom client.</p>
-                <div class="api-list" style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 10px;">
-                    <div class="item-row">
-                        <span class="item-name">POST /api/projects/create</span>
-                        <span class="item-meta">Account Creation</span>
-                    </div>
-                    <div class="item-row">
-                        <span class="item-name">POST /api/projects/{id}/tokens/revoke</span>
-                        <span class="item-meta">Instant Revocation</span>
-                    </div>
-                    <div class="item-row">
-                        <span class="item-name">POST /api/projects/{id}/upload</span>
-                        <span class="item-meta">Secure File Storage</span>
-                    </div>
-                </div>
-            </article>
-        </div>
-    </main>
-
-    <script src="/app.js"></script>
     <script>
-        function showTab(btn, containerId) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.code-container').forEach(c => c.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById(containerId).classList.add('active');
+        const contentDiv = document.getElementById('doc-content');
+
+        async function loadDoc(lang, btn) {
+            // Update UI
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            try {
+                // Determine path based on if it's in langs/ or root
+                const path = lang === 'story' ? 'story.md' : `langs/${lang}.md`;
+                
+                const response = await fetch(path);
+                if (!response.ok) throw new Error('Doc not found');
+                
+                const markdown = await response.text();
+                contentDiv.innerHTML = marked.parse(markdown);
+                
+                // Update URL hash without jumping
+                window.history.pushState(null, null, `#${lang}`);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+            } catch (err) {
+                contentDiv.innerHTML = `<h2>Error</h2><p>Could not load documentation for <strong>${lang}</strong>.</p>`;
+            }
         }
-        checkHoliday();
+
+        // Handle initial load from hash
+        window.addEventListener('DOMContentLoaded', () => {
+            const hash = window.location.hash.slice(1) || 'story';
+            const targetBtn = Array.from(document.querySelectorAll('.sidebar-link'))
+                                   .find(b => b.getAttribute('onclick').includes(`'${hash}'`));
+            loadDoc(hash, targetBtn);
+        });
+
+        // Handle back/forward navigation
+        window.addEventListener('popstate', () => {
+            const hash = window.location.hash.slice(1) || 'story';
+            loadDoc(hash);
+        });
     </script>
 </body>
 </html>
