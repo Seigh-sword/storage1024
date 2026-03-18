@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Form, Dep
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import FileResponse, RedirectResponse
 from manager import ProjectManager
 from dotenv import load_dotenv
 import uvicorn
@@ -248,7 +249,6 @@ async def revoke_token(project_id: str, data: Request, auth: tuple = Depends(val
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")
 app.mount("/docs/static", StaticFiles(directory="docs"), name="docs_static") 
 
-from fastapi.responses import FileResponse
 
 @app.get("/")
 async def read_index():
@@ -271,8 +271,6 @@ async def files_redirect():
     return FileResponse("index.html")
 
 app.mount("/docs/assets", StaticFiles(directory="docs"), name="docs_assets")
-
-from fastapi.responses import FileResponse, RedirectResponse
 
 @app.get("/docs")
 async def read_docs():
