@@ -12,6 +12,7 @@ def test_health_reports_local_backend(client, app_module):
     assert data["status"] == "ok"
     assert data["backend"] == "local"
     assert data["telegram_configured"] is False
+    assert data["github_configured"] is False
 
 
 def test_health_strict_reflects_storage_failure(client, app_module, monkeypatch):
@@ -35,6 +36,7 @@ def test_docs_pages_and_no_path_traversal(client):
     assert "Developer Docs" in client.get("/docs").text
     assert client.get("/docs/style.css").status_code == 200
     assert "REST API" in client.get("/docs/langs/api.md").text
+    assert "Free 24/7 Hosting" in client.get("/docs/langs/hosting.md").text
     assert "Storage1024" in client.get("/docs/story.md").text
     assert client.get("/docs/script.js").status_code == 200
     assert client.get("/docs/marked.umd.js").status_code == 200

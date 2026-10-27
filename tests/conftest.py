@@ -17,6 +17,8 @@ os.environ.pop("API_HASH", None)
 os.environ.pop("TELEGRAM_SESSION", None)
 os.environ.pop("CHANNEL_ID", None)
 os.environ.pop("CREATE_PROJECT_KEY", None)
+os.environ.pop("GITHUB_TOKEN", None)
+os.environ.pop("GITHUB_REPO", None)
 
 
 @pytest.fixture(scope="session")

@@ -30,6 +30,8 @@ def test_get_storage_modes(monkeypatch):
     monkeypatch.delenv("API_HASH", raising=False)
     monkeypatch.delenv("TELEGRAM_SESSION", raising=False)
     monkeypatch.delenv("CHANNEL_ID", raising=False)
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    monkeypatch.delenv("GITHUB_REPO", raising=False)
 
     monkeypatch.setenv("STORAGE_BACKEND", "auto")
     assert isinstance(get_storage(), LocalStorage)

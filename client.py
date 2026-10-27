@@ -1,14 +1,18 @@
 """Storage backends for Storage1024.
 
-Two interchangeable backends implement the same small interface:
+Three interchangeable backends implement the same small interface:
 
 ``TelegramStorage``
     The original backend. The index lives in a Telegram channel as a JSON
     document (pinned, or found through a searchable locator message). The old
     fixed-message-id / plain-text index is still readable for migration.
 
+``GitHubStorage``
+    A free, durable backend that keeps the index, files and variables in a
+    GitHub repository. Ideal for free hosts with ephemeral disks.
+
 ``LocalStorage``
-    A filesystem backend used when Telegram credentials are unavailable, and
+    A filesystem backend used when no remote credentials are available, and
     for local development/tests. Index, files and variables live in DATA_DIR.
 
 Importing this module must never raise: a dead/missing backend is reported by
@@ -18,6 +22,7 @@ returning an empty index (the old behaviour) is what used to wipe projects.
 from __future__ import annotations
 
 import asyncio
+import base64
 import json
 import os
 import re
@@ -27,6 +32,7 @@ import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from urllib.parse import quote
 
 from config import BASE_DIR, data_dir, load_config, telegram_credentials
 
@@ -530,20 +536,302 @@ class TelegramStorage(BaseStorage):
         return files
 
 
+
+class GitHubStorage(BaseStorage):
+    """Durable storage in a GitHub repository (free, no card, no server disk).
+
+    A private repo + a fine-grained personal access token survive redeploys on
+    ephemeral free hosts. The GitHub Contents API caps files at 100 MB; this
+    backend enforces a safer configurable cap (``GITHUB_MAX_FILE_MB``, 20 by
+    default) and reports HTTP 413 above it.
+    """
+
+    name = "github"
+
+    def __init__(self, token=None, repo=None, branch=None, path=None,
+                 max_file_mb=None, client=None) -> None:
+        super().__init__()
+        load_config()
+        self.token = (token or os.getenv("GITHUB_TOKEN", "")).strip() or None
+        self.repo = (repo or os.getenv("GITHUB_REPO", "")).strip().strip("/") or None
+        self.branch = (branch or os.getenv("GITHUB_BRANCH", "main")).strip() or "main"
+        self.root = (path or os.getenv("GITHUB_PATH", "storage1024-data")).strip("/")
+        raw_limit = max_file_mb if max_file_mb is not None else os.getenv("GITHUB_MAX_FILE_MB", "20")
+        self.max_file_bytes = int(float(raw_limit) * 1024 * 1024)
+        self._http = client
+        self._owns_http = client is None
+
+    @property
+    def configuration_error(self) -> Optional[str]:
+        missing = []
+        if not self.token:
+            missing.append("GITHUB_TOKEN")
+        if not self.repo or "/" not in self.repo:
+            missing.append("GITHUB_REPO (owner/repo)")
+        return "Missing GitHub settings: " + ", ".join(missing) if missing else None
+
+    @property
+    def configured(self) -> bool:
+        return self.configuration_error is None
+
+    async def connect(self) -> None:
+        error = self.configuration_error
+        if error:
+            raise StorageUnavailable(error)
+        if self._http is None:
+            try:
+                import httpx
+            except ImportError as exc:  # pragma: no cover - declared dependency
+                raise StorageUnavailable(
+                    "httpx is not installed (pip install -r requirements.txt)"
+                ) from exc
+            self._http = httpx.AsyncClient(
+                base_url="https://api.github.com",
+                headers={
+                    "Authorization": f"Bearer {self.token}",
+                    "Accept": "application/vnd.github+json",
+                    "X-GitHub-Api-Version": "2022-11-28",
+                    "User-Agent": "storage1024",
+                },
+                timeout=httpx.Timeout(60.0, connect=10.0),
+            )
+            self._owns_http = True
+
+    async def disconnect(self) -> None:
+        if self._owns_http and self._http is not None:
+            await self._http.aclose()
+            self._http = None
+
+    async def _http_client(self):
+        if self._http is None:
+            await self.connect()
+        return self._http
+
+    def _url(self, path: str) -> str:
+        full = f"{self.root}/{path}" if self.root else path
+        return f"/repos/{self.repo}/contents/{quote(full, safe='/')}"
+
+    @staticmethod
+    def _decode(encoded: str) -> bytes:
+        try:
+            return base64.b64decode("".join(encoded.split()))
+        except Exception as exc:
+            raise StorageUnavailable(f"GitHub returned unreadable content: {exc}") from exc
+
+    async def _request(self, method: str, url: str, **kwargs):
+        client = await self._http_client()
+        try:
+            response = await client.request(method, url, **kwargs)
+        except Exception as exc:
+            raise StorageUnavailable(f"GitHub API request failed: {exc}") from exc
+        if response.status_code == 404:
+            return None
+        if response.status_code >= 400:
+            raise StorageUnavailable(
+                f"GitHub API {method} {url} -> {response.status_code}: "
+                f"{response.text[:300]}"
+            )
+        return response.json() if response.content else {}
+
+    async def _read(self, path: str):
+        data = await self._request("GET", self._url(path), params={"ref": self.branch})
+        if data is None:
+            return None, None
+        if isinstance(data, list):
+            raise StorageUnavailable(f"Expected a file at {path}, found a directory")
+        if data.get("encoding") == "base64" and data.get("content"):
+            return self._decode(data["content"]), data.get("sha")
+        # Files above 1 MB come back with encoding "none": read the git blob.
+        blob = await self._request("GET", f"/repos/{self.repo}/git/blobs/{data.get('sha')}")
+        if not blob or not blob.get("content"):
+            raise StorageUnavailable(f"GitHub did not return the contents of {path}")
+        return self._decode(blob["content"]), data.get("sha")
+
+    async def _write(self, path: str, content: bytes, message: str) -> None:
+        client = await self._http_client()
+        url = self._url(path)
+        payload = {
+            "message": message,
+            "content": base64.b64encode(content).decode("ascii"),
+            "branch": self.branch,
+        }
+        for attempt in range(3):
+            existing = await self._request("GET", url, params={"ref": self.branch})
+            if isinstance(existing, dict) and existing.get("sha"):
+                payload["sha"] = existing["sha"]
+            else:
+                payload.pop("sha", None)
+            try:
+                response = await client.put(url, json=payload)
+            except Exception as exc:
+                raise StorageUnavailable(f"GitHub API write failed: {exc}") from exc
+            if response.status_code in (200, 201):
+                return
+            if response.status_code == 409 and attempt < 2:
+                await asyncio.sleep(0.2 * (attempt + 1))  # stale sha, retry
+                continue
+            raise StorageUnavailable(
+                f"GitHub could not write {path}: {response.status_code} "
+                f"{response.text[:300]}"
+            )
+        raise StorageUnavailable(f"GitHub could not write {path} after 3 attempts")
+
+    async def _remove(self, path: str) -> bool:
+        existing = await self._request("GET", self._url(path), params={"ref": self.branch})
+        if not isinstance(existing, dict) or not existing.get("sha"):
+            return False
+        client = await self._http_client()
+        try:
+            response = await client.request(
+                "DELETE", self._url(path),
+                json={"message": f"chore: delete {path}", "sha": existing["sha"],
+                      "branch": self.branch},
+            )
+        except Exception:
+            return False
+        return response.status_code in (200, 204)
+
+    async def _list(self, path: str) -> List[Dict[str, Any]]:
+        data = await self._request("GET", self._url(path), params={"ref": self.branch})
+        return data if isinstance(data, list) else []
+
+    # ------------------------------------------------------------------ index
+    async def get_index(self) -> Dict[str, Any]:
+        raw, _ = await self._read("index.json")
+        if raw is None:
+            return {"projects": {}}
+        try:
+            return _as_index(json.loads(raw.decode("utf-8")))
+        except (ValueError, UnicodeDecodeError, StorageUnavailable) as exc:
+            raise StorageUnavailable(f"GitHub index is unreadable: {exc}") from exc
+
+    async def update_index(self, data: Dict[str, Any]) -> None:
+        _as_index(data)
+        await self._write(
+            "index.json",
+            json.dumps(data, separators=(",", ":")).encode("utf-8"),
+            "chore: update Storage1024 index",
+        )
+
+    # ------------------------------------------------------------------ files
+    async def upload_file(self, file_path: str, caption: Optional[str] = None) -> str:
+        source = Path(file_path)
+        if not source.is_file():
+            raise StorageNotFound(f"File not found: {file_path}")
+        size = source.stat().st_size
+        if size > self.max_file_bytes:
+            raise StorageUnavailable(
+                f"File exceeds the GitHub backend limit of "
+                f"{self.max_file_bytes / (1024 * 1024):g}MB"
+            )
+        content = await asyncio.to_thread(source.read_bytes)
+        file_id = uuid.uuid4().hex
+        name = _safe_name(source.name)
+        await self._write(f"files/{file_id}-{name}", content, f"chore: upload {name}")
+        return file_id
+
+    async def _file_path(self, file_id: Any) -> Optional[str]:
+        fid = str(file_id)
+        if not re.fullmatch(r"[0-9a-f]{32}", fid):
+            raise StorageNotFound(f"Unknown file id: {fid!r}")
+        for entry in await self._list("files"):
+            if entry.get("name", "").startswith(fid + "-"):
+                return "files/" + entry["name"]
+        return None
+
+    def _temp_dir(self) -> Path:
+        root = data_dir() / "tmp"
+        root.mkdir(parents=True, exist_ok=True)
+        return Path(tempfile.mkdtemp(prefix="download-", dir=root))
+
+    async def download_file(self, file_id: Any, output_path: Optional[str] = None) -> str:
+        path = await self._file_path(file_id)
+        if not path:
+            raise StorageNotFound(f"File {file_id} is missing from GitHub")
+        content, _ = await self._read(path)
+        if content is None:
+            raise StorageNotFound(f"File {file_id} is missing from GitHub")
+        if output_path:
+            dest = Path(output_path)
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            await asyncio.to_thread(dest.write_bytes, content)
+            return str(dest)
+        dest = self._temp_dir() / path.rsplit("/", 1)[-1].split("-", 1)[-1]
+        await asyncio.to_thread(dest.write_bytes, content)
+        return str(dest)
+
+    async def delete_file(self, file_id: Any) -> bool:
+        path = await self._file_path(file_id)
+        return await self._remove(path) if path else False
+
+    async def list_files(self, limit: int = 20) -> List[Dict[str, Any]]:
+        return [
+            {
+                "id": entry["name"].split("-", 1)[0],
+                "name": entry["name"].split("-", 1)[-1],
+                "size": entry.get("size", 0),
+                "date": None,
+            }
+            for entry in (await self._list("files"))[:limit]
+        ]
+
+    # ------------------------------------------------------- global variables
+    async def _gvs(self) -> Dict[str, str]:
+        raw, _ = await self._read("global_vars.json")
+        if raw is None:
+            return {}
+        try:
+            data = json.loads(raw.decode("utf-8"))
+            return data if isinstance(data, dict) else {}
+        except (ValueError, UnicodeDecodeError) as exc:
+            raise StorageUnavailable(f"GitHub variable store is unreadable: {exc}") from exc
+
+    async def _save_gvs(self, data: Dict[str, str]) -> None:
+        await self._write(
+            "global_vars.json", json.dumps(data).encode("utf-8"),
+            "chore: update Storage1024 variables",
+        )
+
+    async def store_gv(self, key: str, value: Any, message_id: Any = None) -> str:
+        gvs = await self._gvs()
+        mid = str(message_id) if message_id else uuid.uuid4().hex
+        gvs[mid] = str(value)
+        await self._save_gvs(gvs)
+        return mid
+
+    async def get_gv(self, message_id: Any) -> Optional[str]:
+        return (await self._gvs()).get(str(message_id))
+
+    async def delete_gv(self, message_id: Any) -> bool:
+        gvs = await self._gvs()
+        if str(message_id) not in gvs:
+            return False
+        del gvs[str(message_id)]
+        await self._save_gvs(gvs)
+        return True
+
 def get_storage():
     """Pick a backend without ever touching the network or raising."""
     load_config()
     mode = os.getenv("STORAGE_BACKEND", "auto").strip().lower()
     telegram = TelegramStorage()
+    github = GitHubStorage()
     if mode == "local":
         return LocalStorage()
-    if mode not in ("auto", "telegram"):
+    if mode == "github":
+        return github
+    if mode == "telegram":
+        return telegram
+    if mode != "auto":
         raise StorageUnavailable(
-            f"Unknown STORAGE_BACKEND={mode!r} (expected auto, telegram or local)"
+            f"Unknown STORAGE_BACKEND={mode!r} "
+            "(expected auto, telegram, github or local)"
         )
-    if mode == "auto" and not telegram.configured:
-        return LocalStorage()
-    return telegram
+    if telegram.configured:
+        return telegram
+    if github.configured:
+        return github
+    return LocalStorage()
 
 
 def storage_status() -> Dict[str, Any]:
@@ -553,10 +841,22 @@ def storage_status() -> Dict[str, Any]:
     telegram_ready = all(
         creds.get(k) not in (None, "") for k in ("api_id", "api_hash", "session", "channel_id")
     )
-    selected = "local" if mode == "local" or (mode == "auto" and not telegram_ready) else "telegram"
+    github_ready = bool(
+        os.getenv("GITHUB_TOKEN", "").strip()
+        and "/" in os.getenv("GITHUB_REPO", "")
+    )
+    if mode in ("local", "github", "telegram"):
+        selected = mode
+    elif telegram_ready:
+        selected = "telegram"
+    elif github_ready:
+        selected = "github"
+    else:
+        selected = "local"
     return {
         "configured_mode": mode,
         "selected_backend": selected,
         "telegram_configured": telegram_ready,
+        "github_configured": github_ready,
         "data_dir": str(data_dir()),
     }

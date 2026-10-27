@@ -1,0 +1,26 @@
+# OPTIONAL: only needed on hosts that sleep (Render / Zeabur / HF Spaces).
+# Always-on hosts (Northflank, Oracle, home server) do not need this.
+# Set repository variable APP_URL to e.g. https://your-app.example.com
+# GitHub disables scheduled workflows after 60 days of repo inactivity:
+# make a commit or re-enable the workflow to keep the pings coming.
+name: Keep the app awake
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping /api/health
+        env:
+          APP_URL: ${{ vars.APP_URL }}
+        run: |
+          if [ -z "${APP_URL:-}" ]; then
+            echo "::error::Set repository variable APP_URL (Settings > Secrets and variables > Actions > Variables)."
+            exit 1
+          fi
+          curl -fsS --retry 5 --retry-delay 10 --max-time 60 \
+            "${APP_URL%/}/api/health" || exit 1

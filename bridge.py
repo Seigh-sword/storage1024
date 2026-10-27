@@ -338,6 +338,13 @@ async def upload_project_file(
         real_size = temp_path.stat().st_size
         if real_size / (1024 * 1024) > MAX_UPLOAD_MB:
             raise HTTPException(status_code=413, detail=f"File exceeds {MAX_UPLOAD_MB:g}MB limit")
+        # Backends such as GitHub have a smaller hard cap than the server.
+        backend_limit = getattr(manager.storage, "max_file_bytes", None)
+        if backend_limit and real_size > backend_limit:
+            raise HTTPException(
+                status_code=413,
+                detail=f"File exceeds this backend's {backend_limit / (1024 * 1024):g}MB limit",
+            )
 
         await throttle.wait(delay)
         try:
@@ -374,7 +381,7 @@ async def _download(project_id: str, alias: str):
         raise HTTPException(status_code=404, detail="File not found")
     filename = _safe_name(record.get("name") or alias)
     media_type = mimetypes.guess_type(filename)[0] or "application/octet-stream"
-    temporary = manager.storage.name == "telegram"
+    temporary = manager.storage.name in ("telegram", "github")
     try:
         path = await manager.download_file(record.get("id"))
     except StorageNotFound as exc:

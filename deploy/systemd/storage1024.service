@@ -1,0 +1,28 @@
+# Non-Docker deployment on a VM / home machine.
+#   sudo useradd -r -s /usr/sbin/nologin storage1024
+#   sudo mkdir -p /opt/storage1024 && sudo chown storage1024: /opt/storage1024
+#   sudo cp deploy/systemd/storage1024.service /etc/systemd/system/
+#   sudo nano /etc/storage1024.env     # see .env.example
+#   sudo systemctl enable --now storage1024
+[Unit]
+Description=Storage1024 API + dashboard
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=storage1024
+Group=storage1024
+WorkingDirectory=/opt/storage1024
+EnvironmentFile=/etc/storage1024.env
+Environment=PORT=8000
+ExecStart=/opt/storage1024/.venv/bin/uvicorn bridge:app --host 0.0.0.0 --port 8000 --workers 1
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/storage1024/data
+
+[Install]
+WantedBy=multi-user.target

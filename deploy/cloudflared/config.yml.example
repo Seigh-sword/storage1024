@@ -1,0 +1,10 @@
+# Free public HTTPS for a home server (Cloudflare Tunnel).
+# Requires a domain whose DNS is on Cloudflare (free plan is fine).
+#   cloudflared tunnel create storage1024
+#   cloudflared tunnel route dns storage1024 storage.example.com
+tunnel: YOUR_TUNNEL_ID
+credentials-file: /etc/cloudflared/YOUR_TUNNEL_ID.json
+ingress:
+  - hostname: storage.example.com
+    service: http://localhost:8000
+  - service: http_status:404

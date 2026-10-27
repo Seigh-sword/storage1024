@@ -116,10 +116,13 @@ storage backend `503` (the server never pretends the index is empty).
 
 The backend can run in two modes, selected by `STORAGE_BACKEND`:
 
-* `auto` (default) — Telegram when `API_ID`, `API_HASH`, `TELEGRAM_SESSION`
-  and `CHANNEL_ID` are all set, otherwise a local filesystem backend.
+* `auto` (default) — Telegram, else GitHub, else local files.
 * `telegram` — always Telegram (misconfiguration is reported by `/api/health`).
+* `github` — always a GitHub repo: set `GITHUB_TOKEN` (`Contents: read/write`)
+  and `GITHUB_REPO=owner/repo`. Free, durable, no card. Files are capped by
+  `GITHUB_MAX_FILE_MB` (default 20); the API returns `413` above it.
 * `local` — always local files under `DATA_DIR`.
 
-On hosts with ephemeral disks (Render free tier), use the Telegram backend for
-durable data, or attach a persistent disk when using `local`.
+On hosts with ephemeral disks (Render free tier, Northflank Sandbox), use the
+Telegram or GitHub backend for durable data, or attach a persistent disk when
+using `local`. See [Free 24/7 Hosting](/docs#hosting) for deployment options.

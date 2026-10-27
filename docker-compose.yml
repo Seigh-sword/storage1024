@@ -1,0 +1,39 @@
+# For any VM / home server / old laptop: persistent disk + auto-restart.
+# Copy .env.example to .env, fill in your secrets, then: docker compose up -d
+services:
+  storage1024:
+    build: .
+    image: storage1024:latest
+    container_name: storage1024
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - storage1024-data:/app/data
+    environment:
+      PORT: 8000
+      STORAGE_BACKEND: ${STORAGE_BACKEND:-local}
+      DATA_DIR: /app/data
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-1800}
+      THROTTLE_ENABLED: ${THROTTLE_ENABLED:-true}
+      CREATE_PROJECT_KEY: ${CREATE_PROJECT_KEY:-}
+      # Telegram backend (durable, no disk needed)
+      API_ID: ${API_ID:-}
+      API_HASH: ${API_HASH:-}
+      TELEGRAM_SESSION: ${TELEGRAM_SESSION:-}
+      CHANNEL_ID: ${CHANNEL_ID:-}
+      # GitHub backend (durable, no disk needed)
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      GITHUB_REPO: ${GITHUB_REPO:-}
+      GITHUB_BRANCH: ${GITHUB_BRANCH:-main}
+      GITHUB_PATH: ${GITHUB_PATH:-storage1024-data}
+      GITHUB_MAX_FILE_MB: ${GITHUB_MAX_FILE_MB:-20}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=4)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+
+volumes:
+  storage1024-data:

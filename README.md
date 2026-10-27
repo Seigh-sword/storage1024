@@ -23,10 +23,14 @@ python3 -m venv .venv
 python3 bridge.py                 # or: uvicorn bridge:app --host 0.0.0.0 --port 8000
 ```
 
-Open <http://localhost:8000>. With no Telegram credentials the server uses a
+Open <http://localhost:8000>. With no credentials the server uses a
 **local filesystem backend** (`./data/`) and everything works: sign up, get a
 token, upload files, set variables, generate tokens. `/api/health` tells you
-which backend is live.
+which backend is live. Alternatively:
+
+```bash
+cp .env.example .env && docker compose up -d --build
+```
 
 ```bash
 curl http://localhost:8000/api/health
@@ -41,14 +45,51 @@ curl http://localhost:8000/api/health
 .venv/bin/python -m pytest -q
 ```
 
-31 tests cover the API, both storage backends (Telegram is exercised with a
-fake Telethon client), static docs, SDK syntax and the import-without-secrets
-boot path.
+40 tests cover the API, all three storage backends (Telegram and GitHub are
+exercised with fake clients), static docs, SDK syntax and the
+import-without-secrets boot path.
 
 ---
 
-## Deploying to Render again
+## Free 24/7 hosting (no Render)
 
+Render's free plan **spins down after ~15 minutes idle** — it cannot be 24/7.
+The app is now host-agnostic (relative URLs, `PORT`, `Dockerfile`,
+`docker-compose.yml`, systemd unit), so it runs anywhere. Full comparison and
+copy-paste steps: **[`deploy/README.md`](deploy/README.md)** (also at
+[`/docs#hosting`](/docs#hosting)).
+
+| Host | Free | 24/7 | Card | Disk |
+| --- | --- | --- | --- | --- |
+| **Northflank Sandbox** ([pricing](https://northflank.com/pricing)) | Yes | **Yes — "always on, no sleeping"** | No | Ephemeral |
+| **Oracle Cloud Always Free** ([free tier](https://www.oracle.com/cloud/free/)) | Yes, forever | Yes | Verification only | 200 GB |
+| **Home device + Cloudflare Tunnel** ([guide](https://tech-insider.org/cloudflare-tunnel-setup-2026-homelab/)) | Yes | Yes | No | Persistent |
+| **alwaysdata Free** ([offers](https://www.alwaysdata.com/en/offers/)) | Yes, for life | Yes | No | 1 GB |
+
+Ruled out in 2026: Koyeb (free plan closed to new users), Hugging Face Docker
+Spaces (PRO required), PythonAnywhere (WSGI-only + outbound allowlist), Zeabur
+(auto-sleep), Fly.io/Railway (trial credit), Render free (sleeps).
+
+### Durability without a disk
+
+Free PaaS disks are wiped on redeploy, so use a remote backend:
+
+| Backend | Data lives in | Secrets | Limit |
+| --- | --- | --- | --- |
+| `telegram` | Your Telegram channel | 4 vars | 1800 MB files |
+| `github` | A private GitHub repo | `GITHUB_TOKEN`, `GITHUB_REPO` | `GITHUB_MAX_FILE_MB` (20 default) |
+| `local` | `DATA_DIR` on the host | none | needs a persistent volume |
+
+`STORAGE_BACKEND=auto` picks telegram → github → local. The GitHub backend is
+new: a private repo + a fine-grained token with **Contents: read/write**
+survives any redeploy, needs no card, and is the easiest way to get durable
+storage on an ephemeral free host. For sleeping hosts,
+`.github/workflows/keep-alive.yml` pings `/api/health` every 10 minutes.
+
+## Deploying to Render (optional — it sleeps)
+
+0. **Note:** free Render services sleep after inactivity and have 750
+   instance-hours/month. Use the free 24/7 options above if uptime matters.
 1. Copy `.env.example` to `.env` locally to see every option.
 2. In Render: **New → Blueprint**, pick this repo, and use the included
    [`render.yaml`](render.yaml). Blueprints deploy a branch of your choice —
@@ -92,11 +133,15 @@ boot path.
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `STORAGE_BACKEND` | `auto` | `auto`, `telegram`, or `local` |
+| `STORAGE_BACKEND` | `auto` | `auto`, `telegram`, `github`, or `local` |
 | `DATA_DIR` | `./data` | Local backend storage directory |
 | `API_ID` / `API_HASH` | – | Telegram app credentials |
 | `TELEGRAM_SESSION` | – | Telethon StringSession (or `storage.session_string` file) |
 | `CHANNEL_ID` | – | Numeric Telegram channel id |
+| `GITHUB_TOKEN` | – | Fine-grained PAT with Contents read/write on one repo |
+| `GITHUB_REPO` | – | `owner/repo` holding the index and files |
+| `GITHUB_BRANCH` / `GITHUB_PATH` | `main` / `storage1024-data` | Where the backend writes |
+| `GITHUB_MAX_FILE_MB` | `20` | Hard cap for the GitHub backend (`413` above it) |
 | `INDEX_MESSAGE_ID` | `4` | Legacy index message id (migration only) |
 | `MAX_UPLOAD_MB` | `1800` | Upload limit (`413` above it) |
 | `THROTTLE_ENABLED` | `true` | Space out Telegram writes to avoid FloodWait |
@@ -145,7 +190,9 @@ never lose its last private token.
   without perfectly-set env vars died before binding a port. Now nothing
   touches the network at import; missing config selects the local backend and
   `/api/health` reports it.
-- No `render.yaml`, `.env.example`, README or pinned requirements. Added.
+- No `render.yaml`, `.env.example`, README or pinned requirements. Added,
+  plus a `Dockerfile`, Compose file, systemd unit, Cloudflare Tunnel config and
+  a free-24/7 hosting guide so the app is not tied to Render.
 - Static files were resolved relative to the process CWD; now resolved from
   the repository root.
 
@@ -166,6 +213,9 @@ never lose its last private token.
   global lock during a 1–35s sleep. Uploads now go to a sanitized temp dir,
   and throttling only spaces out the actual writes.
 - Tokens used `random.choices` / a truncated UUID. Now `secrets.token_urlsafe`.
+- Free hosts wipe their disks on redeploy. Added a `github` storage backend
+  (private repo + fine-grained token) so durable storage needs no card, no
+  Telegram account and no persistent volume.
 
 **API / SDK contract**
 - `GET /api/projects/{id}/gv/{alias}` did not exist, yet every SDK called it
@@ -210,8 +260,10 @@ never lose its last private token.
   keep the built-in 10-projects/minute/IP rate limit.
 - File share URLs are capabilities: anyone holding one can read that file.
   Deleting the file invalidates the link.
-- Run one worker (the default in `render.yaml`): the local backend and the
-  in-memory rate limiter are per-process.
+- Run one worker (the default in `render.yaml`, `Dockerfile` and the systemd
+  unit): the local backend and the in-memory rate limiter are per-process.
+- Keep the GitHub storage repo private and scope the token to that repo only;
+  it holds your project index (including tokens) and uploaded files.
 
 ## Layout
 
@@ -227,5 +279,10 @@ docs/                developer docs (markdown + viewer)
 libraries/           SDKs (16 languages) + python wheel/sdist
 web/                 alternative browser clients
 tests/               pytest suite
-render.yaml          Render Blueprint
+render.yaml          Render Blueprint (optional; free tier sleeps)
+Dockerfile / docker-compose.yml   any Docker host
+deploy/README.md     free 24/7 hosting comparison + steps
+deploy/systemd/      systemd unit for a VM/home server
+deploy/cloudflared/  free public HTTPS for a home server
+.github/workflows/keep-alive.yml  optional ping for hosts that sleep
 ```
