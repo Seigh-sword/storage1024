@@ -5,14 +5,17 @@ Render's free plan spins down after ~15 minutes of inactivity, so it is not
 storage backends), so you can move it anywhere. Full copy-paste steps live in
 [`deploy/README.md`](https://github.com/Seigh-sword/storage1024/blob/main/deploy/README.md).
 
-### Picks (checked October 2026)
+### No-card picks (checked October 2026)
 
-| Host | Free | 24/7 | Card | Disk |
+| Host | Free | 24/7 | Card | RAM / disk |
 | --- | --- | --- | --- | --- |
-| [Northflank Sandbox](https://northflank.com/pricing) | Yes | **Yes** | No | Ephemeral |
-| [Oracle Cloud Always Free](https://www.oracle.com/cloud/free/) | Yes, forever | Yes | Verification only | 200 GB |
-| Home device + [Cloudflare Tunnel](https://tech-insider.org/cloudflare-tunnel-setup-2026-homelab/) | Yes | Yes | No | Persistent |
-| [alwaysdata Free](https://www.alwaysdata.com/en/offers/) | Yes, for life | Yes | No | 1 GB |
+| **[alwaysdata Free](https://www.alwaysdata.com/en/offers/)** | Yes, for life | Yes | **No** | 256 MB / 1 GB |
+| [Northflank Sandbox](https://northflank.com/pricing) | Yes | Yes | Official page says no; some regions ask for verification | ~1 GB / ephemeral |
+| [Serv00](https://www.serv00.com/) | Yes | Yes | **No** | 512 MB / 3 GB |
+| Home device + [Tailscale Funnel](https://tailscale.com/docs/features/tailscale-funnel) | Yes | Yes | **No** | your hardware |
+
+[Oracle Cloud Always Free](https://www.oracle.com/cloud/free/) is excellent but
+requires a card for identity verification, so it is excluded here.
 
 Not 24/7 (or no longer free): Koyeb (free plan closed to new users in 2026),
 Hugging Face Docker Spaces (PRO required), PythonAnywhere (WSGI-only,
@@ -24,8 +27,10 @@ Render free (sleeps).
 Storage1024 is **chat app as database**: your Telegram channel holds the index
 and files. That is the primary backend, and it makes an ephemeral disk
 harmless. Set `STORAGE_BACKEND=telegram` with the four Telegram secrets; see
+[`deploy/alwaysdata.md`](https://github.com/Seigh-sword/storage1024/blob/main/deploy/alwaysdata.md)
+(no card) or
 [`deploy/northflank.md`](https://github.com/Seigh-sword/storage1024/blob/main/deploy/northflank.md)
-for the exact walkthrough.
+(Docker) for the exact walkthrough.
 
 - `STORAGE_BACKEND=telegram` — **primary.** Up to 1800 MB files, data lives in
   your channel, which is also your backup.
@@ -43,7 +48,9 @@ docker compose up -d --build     # any VM / home server
 curl localhost:8000/api/health
 ```
 
-On Northflank, deploy this repo's `Dockerfile`, set port `8000` and health
-check `/api/health`, then add `STORAGE_BACKEND=github`, `GITHUB_TOKEN` and
-`GITHUB_REPO`. No keep-alive ping is needed there. For hosts that do sleep,
+On alwaysdata, create a **User program** site with
+`uvicorn bridge:app --host $IP --port $PORT --workers 1` and paste the four
+Telegram secrets. On Northflank, deploy the `Dockerfile` on port `8000` with
+health check `/api/health`. Neither host sleeps, so no keep-alive ping is
+needed. For hosts that do sleep,
 `.github/workflows/keep-alive.yml` pings `/api/health` every 10 minutes.

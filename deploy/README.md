@@ -1,232 +1,196 @@
-# Free 24/7 hosting (October 2026)
+# Free 24/7 hosting with NO credit card (October 2026)
 
-Render's free plan is **not** 24/7: the service spins down after ~15 minutes of
-inactivity and takes about a minute to cold-start again. The app itself is now
-host-agnostic (relative URLs, `PORT`, Docker, three storage backends), so it can
-run anywhere. This file compares the free options that are actually still
-available and gives copy-paste deployment steps.
+Render's free plan is **not** 24/7 (spins down after ~15 minutes idle), and
+several 2026 no-card projects report that Render now asks for a card on file
+even for the free tier. The app is host-agnostic now (relative URLs, `PORT`,
+Docker, three storage backends), so it can run anywhere. This file compares
+the options that need **no card** and gives copy-paste deployment steps.
 
 > Prices and free tiers change constantly — verify on the provider's own
 > pricing page before signing up. All figures below were checked 2026-10-27.
 
 ## TL;DR
 
-| Host | Free? | 24/7? | Card? | Persistent disk? | Best when |
+| Host | Free? | 24/7? | Card? | RAM / disk | Catch |
 | --- | --- | --- | --- | --- | --- |
-| **Northflank Sandbox** | Yes | **Yes — "always on, no sleeping"** | Official page: no | No (ephemeral) | You want zero cost, no hardware, no card |
-| **Oracle Cloud Always Free** | Yes, forever | Yes | Yes, verification only | Yes (200 GB) | You have a card and want a real VM |
-| **Home device + Cloudflare Tunnel** | Yes | Yes, if the device stays on | No | Yes | You have an old laptop/Pi/phone |
-| **alwaysdata Free** | Yes, for life | Yes | No | Yes (1 GB) | Tiny personal project, no Docker |
-| Render free | Yes | **No** — sleeps | No | No (ephemeral) | Only with a keep-alive ping |
-| Koyeb / HF Spaces / PythonAnywhere / Zeabur / Fly.io | see "Ruled out" below | | | | |
+| **alwaysdata Free** | Yes, for life | Yes | **No** | 256 MB / 1 GB | Personal use only, `*.alwaysdata.net` |
+| **Northflank Sandbox** | Yes | **Yes — "always on, no sleeping"** | Official page says no | ~1 GB / ephemeral | Some regions trigger a card *verification* hold |
+| **Serv00** | Yes | Yes | **No** | 512 MB / 3 GB | Must log in every 90 days; FreeBSD; no SLA |
+| **Home device + Tailscale Funnel** | Yes | Yes, if the device stays on | **No** | whatever you have | Needs hardware + power |
+| Oracle Cloud Always Free | Yes, forever | Yes | Yes, verification only | 12 GB / 200 GB | Card required — ruled out here |
+| Render free | Yes | **No** — sleeps | Sometimes | 512 MB / ephemeral | Cold starts, 750 instance-hours/month |
 
-**Recommended combo:** Northflank (always-on, no card) + the **Telegram
-backend** — Storage1024 is *chat app as database*; the channel is the DB, so
-an ephemeral disk is harmless. **[Full step-by-step guide → `northflank.md`](northflank.md)**
-(paste-ready env vars: [`northflank.env.example`](northflank.env.example)).
+**Recommended:** **alwaysdata + the Telegram backend** —
+[`alwaysdata.md`](alwaysdata.md) is the exact walkthrough, and
+[`alwaysdata.env.example`](alwaysdata.env.example) is the paste-ready env
+block. No card, no hardware, no sleep timer, no PR needed (clone the working
+branch directly). Storage1024 is **chat app as database**: the Telegram
+channel holds everything, so an ephemeral/limited disk is harmless.
 
-The `github` backend below is an optional fallback for people who no longer
-have their Telegram API credentials; it is not the main path.
+The `github` backend is an optional fallback for people who no longer have
+their Telegram API credentials; it is not the main path.
 
-## The durability problem (read this first)
+## Why no-card is hard in 2026
 
-Free hosts give you an **ephemeral** disk: every redeploy/restart wipes
-`DATA_DIR`. That is why the app now has three backends:
+A real FastAPI + Telethon project that hunted for the same thing in October
+2026 ended up on alwaysdata after: Render asked for a card, SnapDeploy
+suspended the account for Telegram API tooling, Zeabur stopped new signups,
+Koyeb/Fly.io needed cards, Hugging Face Docker Spaces went behind PRO,
+InfinityFree was PHP-only and Glitch shut down app hosting. See its
+[README](https://github.com/ramwanstream/tg-stream) and its live site
+<https://ramwanstream.alwaysdata.net>. alwaysdata's "User program" (documented
+for FastAPI/uvicorn) plus fully open outbound TCP is what fits.
 
-| `STORAGE_BACKEND` | Where data lives | Secrets needed | File size | Needs a disk? |
-| --- | --- | --- | --- | --- |
-| `telegram` | Your Telegram channel | `API_ID`, `API_HASH`, `TELEGRAM_SESSION`, `CHANNEL_ID` | up to 1800 MB | No |
-| `github` | A private GitHub repo | `GITHUB_TOKEN`, `GITHUB_REPO` | 20 MB default (`GITHUB_MAX_FILE_MB`) | No |
-| `local` | `DATA_DIR` on the host | none | up to 1800 MB | **Yes** |
-
-`auto` picks telegram → github → local depending on which secrets are set.
-`/api/health` always tells you which backend is live. Use `telegram` or
-`github` on ephemeral hosts; use `local` only on a VM/home server with a
-persistent volume.
+Other confirmed dead ends: Koyeb closed its free plan to new users in Feb
+2026 <https://toolfreebie.com/koyeb-free-tier-alternatives/>; free HF Docker
+Spaces need PRO <https://huggingface.co/docs/hub/en/spaces-overview>;
+PythonAnywhere free is WSGI-only with an outbound allowlist and expires after
+a month <https://help.pythonanywhere.com/pages/FreeAccountsFeatures/>; Zeabur
+auto-sleeps <https://zeabur.com/docs/en-US/pricing/free-plan>.
 
 ---
 
-## Option 1 — Northflank Sandbox (no card, truly always-on)
+## Option 1 — alwaysdata Free (no card, free for life, always-on)
+
+Free plan: no credit card, valid without time limit, 1 GB SSD, **256 MB RAM**,
+¼ CPU, SSH (including a browser terminal), Python 3.11, ASGI via the
+**User program** site type, open outbound TCP. Personal/non-commercial use,
+`*.alwaysdata.net` address, no custom domain, no SLA.
+<https://www.alwaysdata.com/en/offers/> ·
+<https://help.alwaysdata.com/en/docs/web-hosting/languages/python/configuration/> ·
+<https://help.alwaysdata.com/en/docs/web-hosting/sites/http-servers/user-program/>
+
+Over SSH (or the web terminal at `https://ssh-<account>.alwaysdata.net`):
+
+```bash
+git clone -b arena/1bde6926-storage1024 \
+    https://github.com/Seigh-sword/storage1024.git ~/storage1024
+cd ~/storage1024
+python -m venv .venv && .venv/bin/pip install -r requirements.txt
+```
+
+Then **Web → Sites → Add a site → User program**:
+
+- Command: `/home/<account>/storage1024/.venv/bin/uvicorn bridge:app --host $IP --port $PORT --workers 1`
+- Working directory: `/home/<account>/storage1024`
+- Environment: paste [`alwaysdata.env.example`](alwaysdata.env.example)
+
+Full steps, memory notes and troubleshooting: **[`alwaysdata.md`](alwaysdata.md)**.
+
+---
+
+## Option 2 — Northflank Sandbox (worth trying first, more RAM)
 
 Northflank's official pricing page lists a free **Sandbox**: 2 services,
 2 jobs, 1 database, up to $20/month of resources, "Always on, no sleeping",
-"No card needed". Ephemeral storage is free; persistent volumes are paid —
-which is fine, because the GitHub/Telegram backends need no volume.
-<https://northflank.com/pricing>
+"No card needed". <https://northflank.com/pricing>
 
-Some third-party trackers report that a card is requested for anti-abuse
-verification at signup (a hold, not a charge). If that happens to you, try
-Option 2 or 3.
+⚠️ Third-party trackers report that some regions are asked for a card
+**verification hold** at signup — not a charge, but still a card. If that
+happens, close the tab and use **Option 1**. If it lets you in without one,
+it's the better host (more RAM, Docker, custom domains).
 
-1. Push this branch to GitHub and merge to `main` (or select the branch during
-   setup).
-2. In Northflank: **Create project → Service → Deploy from Git**, pick the repo.
-3. Build type: **Dockerfile** (root `Dockerfile`), port **8000**, health check
-   path `/api/health`.
-4. Add secret environment variables in the service settings:
-   - `STORAGE_BACKEND=github`
-   - `GITHUB_TOKEN=<fine-grained token with Contents: read/write on one repo>`
-   - `GITHUB_REPO=<owner>/<private-repo>`
-   - optionally `CREATE_PROJECT_KEY=<random>` (then pass `X-Create-Key` when
-     creating projects).
-   - Or use `STORAGE_BACKEND=telegram` and the four Telegram vars.
-5. Deploy. Northflank gives you a public HTTPS URL; custom domains are
-   supported on the free plan. No sleep timer, no ping needed.
-
-GitHub token setup: create a **private** repo (it can be empty), then
-**Settings → Developer settings → Personal access tokens → Fine-grained
-tokens**, scope it to that one repo with **Contents: read and write**. The
-backend creates `storage1024-data/index.json`, `global_vars.json` and
-`files/` on first write. Keep `GITHUB_MAX_FILE_MB` at 20 or lower — the
-GitHub Contents API is not meant for large binary blobs.
+Deploy the root `Dockerfile` as a combined service on port 8000. Full
+walkthrough: **[`northflank.md`](northflank.md)** and
+[`northflank.env.example`](northflank.env.example).
 
 ---
 
-## Option 2 — Oracle Cloud Always Free VM (best resources, card for verification)
+## Option 3 — Serv00 (no card, 512 MB, but keep the account alive)
 
-Always Free includes up to **2 OCPUs / 12 GB RAM** on Ampere A1 (halved from
-4/24 in June 2026), **200 GB** block storage and **10 TB** outbound per month,
-with no time limit. A credit/debit card is required for **identity
-verification only** — Oracle places a temporary hold and does not charge for
-Always Free resources. Signup rejections and "out of host capacity" errors are
-common; pick your home region carefully (it is permanent), e.g. Mumbai.
-<https://www.oracle.com/cloud/free/> ·
-<https://www.oracle.com/cloud/free/faq/> ·
-<https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier.htm>
+Free: 3 GB SSD, **512 MB RAM**, 15 system processes, SSH, cron, 3 TCP/UDP
+ports, own applications via "Run your own applications"/Binexec, Python 3.11.
+<https://www.serv00.com/> · <https://docs.serv00.com/Python/>
 
-1. Create an Always Free VM (Ubuntu 22.04+ or Oracle Linux, Ampere A1,
-   1–2 OCPU / 4–8 GB is plenty).
-2. Open port **8000** in the VCN security list *and* in the VM's firewall
-   (`sudo iptables -I INPUT -p tcp --dport 8000 -j ACCEPT` /
-   `firewall-cmd --add-port=8000/tcp --permanent`).
-   Alternatively skip public ports entirely and use a Cloudflare Tunnel
-   (Option 3).
-3. Install Docker + Compose, clone the repo, copy `.env.example` to `.env`:
+Caveats you must accept:
 
-   ```bash
-   git clone https://github.com/Seigh-sword/storage1024.git
-   cd storage1024
-   cp .env.example .env
-   # STORAGE_BACKEND=local is fine here: the VM disk is persistent
-   docker compose up -d --build
-   curl localhost:8000/api/health
-   ```
+- **Log in via SSH or the DevilWEB panel at least once every 90 days** or the
+  account is deleted. Automate a monthly login with a scheduled GitHub
+  Action using a repository secret, or just set a calendar reminder.
+- FreeBSD, not Linux — some wheels may need compiling.
+- No SLA, forum-only support, free subdomain may be blocked on some networks.
 
-4. `restart: unless-stopped` in `docker-compose.yml` brings it back after
-   reboots. Add a Cloudflare Tunnel or a Caddy reverse proxy for HTTPS.
-
-Because the disk is persistent, `STORAGE_BACKEND=local` works here with **no
-Telegram or GitHub credentials at all**.
+Steps: enable *Run your own applications*, reserve a TCP port, create a venv,
+install `requirements.txt`, start uvicorn inside `tmux`/`screen` on the
+reserved port, and add a cron entry to restart it if it dies. Set the same
+Telegram environment variables as alwaysdata. Use `STORAGE_BACKEND=telegram`
+so the 3 GB disk is irrelevant.
 
 ---
 
-## Option 3 — Old laptop / Raspberry Pi / Android phone + free tunnel
+## Option 4 — Old laptop / Raspberry Pi / Android phone + Tailscale Funnel
 
-Truly free, no card, 24/7 as long as the device and your home internet stay
-on. Cloudflare Tunnel's connector and bandwidth are free; it needs a domain on
-Cloudflare for a stable hostname (a `.com`/`.in` domain is a few hundred rupees
-a year), or use a quick tunnel with a random URL that changes on restart.
-<https://tech-insider.org/cloudflare-tunnel-setup-2026-homelab/>
-<https://tech-insider.org/cloudflare-tunnel-setup-2026/>
+Truly free, no card, no cloud account, **stable** HTTPS URL with no domain
+and no port forwarding. Tailscale's Personal plan is free forever and includes
+Funnel; the URL is `https://<machine>.<tailnet>.ts.net`.
+<https://tailscale.com/pricing> ·
+<https://tailscale.com/docs/features/tailscale-funnel>
 
 ```bash
 # On the device (Linux / Termux / WSL):
-git clone https://github.com/Seigh-sword/storage1024.git && cd storage1024
-cp .env.example .env          # STORAGE_BACKEND=local, disk is persistent
-docker compose up -d --build  # or: .venv/bin/uvicorn bridge:app --port 8000
-./deploy/quick-tunnel.sh 8000   # prints a free public https URL
+git clone -b arena/1bde6926-storage1024 \
+    https://github.com/Seigh-sword/storage1024.git && cd storage1024
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+cp .env.example .env      # fill the four Telegram vars; STORAGE_BACKEND=telegram
+STORAGE_BACKEND=telegram PORT=8000 .venv/bin/python bridge.py &
+./deploy/tailscale-funnel.sh 8000   # prints your permanent public URL
 ```
 
-For a stable URL: install `cloudflared`, create a tunnel, and use
-`deploy/cloudflared/config.yml.example`. For a non-Docker setup use
-`deploy/systemd/storage1024.service` (auto-restart on crash/reboot).
+Funnel needs MagicDNS + HTTPS certificates enabled for the tailnet (the first
+`tailscale funnel` run prompts you to approve). It only publishes on ports
+443/8443/10000 and has non-configurable bandwidth limits. Keep the device on
+24/7; use `deploy/systemd/storage1024.service` for auto-restart on Linux.
 
-Termux note: install Docker alternative is not available — use the venv path:
-
-```bash
-pkg install python git
-python -m venv .venv && .venv/bin/pip install -r requirements.txt
-STORAGE_BACKEND=local PORT=8000 .venv/bin/python bridge.py
-```
+Alternatives if you have a domain: `deploy/cloudflared/config.yml.example`
+(Cloudflare Tunnel, free unmetered bandwidth). Without a domain and without
+Tailscale, `deploy/quick-tunnel.sh` gives a free **random** URL that changes
+on every restart.
 
 ---
 
-## Option 4 — alwaysdata Free (no card, free for life, small)
+## Option 5 — Oracle Cloud (excluded: needs a card)
 
-Free plan: no credit card, valid without time limit, **1 GB SSD, 256 MB RAM,
-¼ CPU**, SSH, Python 3.11 available, personal/non-commercial use only. ASGI
-apps are supported through the **User program** site type, which runs uvicorn
-on the provided `$IP`/`$PORT`.
-<https://www.alwaysdata.com/en/offers/> ·
-<https://help.alwaysdata.com/en/docs/web-hosting/languages/python/configuration/> ·
-<https://help.alwaysdata.com/en/docs/admin-billing/billing/public-cloud-prices/>
-
-Steps (over SSH):
-
-```bash
-git clone https://github.com/Seigh-sword/storage1024.git ~/storage1024
-cd ~/storage1024
-python -m venv .venv
-.venv/bin/pip install -r requirements.txt
-```
-
-Then in the admin panel: **Web → Sites → Add a site → User program**
-
-- Address: `yourname.alwaysdata.net`
-- Working directory: `/home/yourname/storage1024`
-- Command: `.venv/bin/uvicorn bridge:app --host $IP --port $PORT --workers 1`
-- Environment: `STORAGE_BACKEND=local`, `DATA_DIR=/home/yourname/storage1024/data`,
-  `PORT=$PORT` (plus Telegram/GitHub vars if you prefer those backends).
-
-Caveats: 256 MB RAM is tight — keep one worker and avoid huge uploads. The
-free plan's terms say it "cannot be used to run services"; the User program
-site type is a documented feature, but verify with their support before
-relying on it 24/7. Unused free sites may be expired.
+Always Free is genuinely free forever with 2 OCPU / 12 GB / 200 GB disk, but
+signup requires a credit/debit card for identity verification (not charged).
+<https://www.oracle.com/cloud/free/faq/> ·
+<https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier.htm>
+If you later get a card, `docker compose up -d --build` with the root
+`docker-compose.yml` is all you need.
 
 ---
 
-## Ruled out in 2026
+## Storage: the CADB part
 
-- **Koyeb** — free Starter plan closed to new users in February 2026 after the
-  Mistral acquisition; new accounts need a paid plan and a $29 pre-authorization
-  hold, and the remaining free instance scales to zero after an hour idle.
-  <https://toolfreebie.com/koyeb-free-tier-alternatives/>
-  <https://www.koyeb.com/docs/faqs/pricing>
-- **Hugging Face Spaces** — since July 2026, creating a Docker or Gradio Space
-  on CPU Basic requires PRO (~$9/month); free CPU spaces sleep after 48 h.
-  <https://huggingface.co/docs/huggingface_hub/en/guides/manage-spaces>
-  <https://huggingface.co/docs/hub/en/spaces-overview>
-- **PythonAnywhere** — free tier is WSGI-only (no FastAPI/ASGI), outbound
-  network is an HTTP(S) allowlist (Telethon needs raw TCP), and unused free web
-  apps expire after 1 month. <https://help.pythonanywhere.com/pages/FreeAccountsFeatures/>
-- **Zeabur** — free plan auto-sleeps. <https://zeabur.com/docs/en-US/pricing/free-plan>
-- **Fly.io / Railway** — trial credit only; trial machines stop after minutes /
-  the free credit runs out monthly.
-- **Cloud Run / Vercel / Netlify / Cloudflare Workers** — serverless cold
-  starts, small request bodies (Cloud Run ~32 MB vs our 1800 MB uploads), and a
-  billing account is required for Cloud Run.
-- **Render free** — sleeps after 15 min idle; only 750 instance-hours/month.
+| `STORAGE_BACKEND` | Data lives in | Secrets | File cap | Needs a disk? |
+| --- | --- | --- | --- | --- |
+| `telegram` **(primary)** | Your Telegram channel | 4 vars | 1800 MB | No |
+| `github` (fallback) | A private GitHub repo | `GITHUB_TOKEN`, `GITHUB_REPO` | 20 MB default | No |
+| `local` | `DATA_DIR` on the host | none | 1800 MB | **Yes** |
 
-If you must use a host that sleeps, `.github/workflows/keep-alive.yml` pings
-`/api/health` every 10 minutes for free (set the `APP_URL` repository
-variable). GitHub disables scheduled workflows after 60 days of repo
-inactivity — commit once in a while or re-enable it. A ping reduces downtime;
-it does not remove cold starts.
+Set `STORAGE_BACKEND=telegram` explicitly on any ephemeral host so a bad
+config fails loudly in `/api/health` instead of silently writing to a disk
+that will vanish. `auto` picks telegram → github → local. Get the four
+secrets with `generate_session.py` (it prints channel ids too) — see step 0 of
+either deployment guide.
 
----
+## Keep-alive / uptime
+
+None of the four no-card options sleep, so **no ping is required**. If you
+still want a free uptime check, `.github/workflows/keep-alive.yml` hits
+`/api/health` every 10 minutes — set the `APP_URL` repository variable. GitHub
+disables scheduled workflows after 60 days of repo inactivity, so commit once
+in a while. Serv00's 90-day login rule is separate and cannot be satisfied by
+an HTTP ping.
 
 ## Checklist for any host
 
-1. `PORT` must be read from the environment (the Dockerfile and `bridge.py`
-   already do). Bind `0.0.0.0`, one worker.
-2. Set `CREATE_PROJECT_KEY` on a public deployment and pass `X-Create-Key`
-   from trusted clients; otherwise anyone can create projects.
-3. Put secrets in the host's secret manager, never in `.env` in Git.
-4. Point a custom domain (or the host's free subdomain) at the service; the
-   dashboard, docs and `/s1024.js` all use relative URLs, so they work on any
-   hostname.
-5. Check `/api/health` — `status: ok` plus `backend: github|telegram|local`.
-   `?strict=true` returns 503 if storage is unreachable (use it for external
-   monitoring).
-6. Back up the index: it is one JSON document in your Telegram channel or
-   `index.json` in your GitHub repo / `DATA_DIR`.
+1. One worker; `PORT`/`$PORT` from the environment; relative URLs everywhere.
+2. Set `CREATE_PROJECT_KEY` and pass `X-Create-Key` — otherwise anyone who
+   finds the URL can create projects.
+3. Secrets in the host's environment/secret manager, never in Git.
+4. Check `/api/health` → `status: ok`, `backend: telegram`.
+   `?strict=true` returns 503 when storage is unreachable.
+5. Set the repo homepage to the new URL; the old `storage1024.onrender.com`
+   address is gone.
+6. Your backup is the Telegram channel itself (pinned
+   `storage1024-index.json` + file/variable messages).

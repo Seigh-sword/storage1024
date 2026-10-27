@@ -1,10 +1,14 @@
 # Deploy Storage1024 on Northflank (free, 24/7, CADB)
 
-This is the recommended production setup: **Northflank's free Sandbox** runs
-the container 24/7 with no sleep timer and no credit card, while **Telegram is
-the database** — the whole point of Storage1024 (chat app as DB). Files and the
-project index live in your Telegram channel, so Northflank's ephemeral disk
-does not matter.
+> ⚠️ **No card available?** Northflank's official pricing says "No card
+> needed", but some regions are asked for a card *verification hold* at
+> signup. If that happens to you, stop and use
+> **[`alwaysdata.md`](alwaysdata.md)** — that path needs no card at all.
+
+**Northflank's free Sandbox** runs the container 24/7 with no sleep timer,
+while **Telegram is the database** — the whole point of Storage1024 (chat app
+as DB). Files and the project index live in your Telegram channel, so
+Northflank's ephemeral disk does not matter.
 
 Official references: [pricing (Sandbox: "No card needed", "Always on, no
 sleeping")](https://northflank.com/pricing), [build & deploy your

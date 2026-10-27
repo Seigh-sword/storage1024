@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Free public URL with NO domain and NO card, for a home server.
 # The hostname changes whenever the tunnel restarts - fine for testing,
-# not ideal as a permanent address. For a stable URL use config.yml.example.
+# not ideal as a permanent address. For a STABLE free URL with no domain,
+# use ./tailscale-funnel.sh instead. With a domain, use config.yml.example.
 set -euo pipefail
 PORT_TO_EXPOSE="${1:-8000}"
 

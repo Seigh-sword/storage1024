@@ -51,28 +51,39 @@ import-without-secrets boot path.
 
 ---
 
-## Free 24/7 hosting (no Render)
+## Free 24/7 hosting (no card, no Render)
 
-Render's free plan **spins down after ~15 minutes idle** — it cannot be 24/7.
-The app is now host-agnostic (relative URLs, `PORT`, `Dockerfile`,
-`docker-compose.yml`, systemd unit), so it runs anywhere. Full comparison and
-copy-paste steps: **[`deploy/README.md`](deploy/README.md)** (also at
+Render's free plan **spins down after ~15 minutes idle**, so it cannot be 24/7
+— and 2026 reports say it may ask for a card even on the free tier. The app is
+now host-agnostic (relative URLs, `PORT`, `Dockerfile`, `docker-compose.yml`,
+systemd unit), so it runs anywhere. Full comparison and copy-paste steps:
+**[`deploy/README.md`](deploy/README.md)** (also at
 [`/docs#hosting`](/docs#hosting)).
 
-| Host | Free | 24/7 | Card | Disk |
+| Host | Free | 24/7 | Card | RAM / disk |
 | --- | --- | --- | --- | --- |
-| **Northflank Sandbox** ([pricing](https://northflank.com/pricing)) | Yes | **Yes — "always on, no sleeping"** | No | Ephemeral |
-| **Oracle Cloud Always Free** ([free tier](https://www.oracle.com/cloud/free/)) | Yes, forever | Yes | Verification only | 200 GB |
-| **Home device + Cloudflare Tunnel** ([guide](https://tech-insider.org/cloudflare-tunnel-setup-2026-homelab/)) | Yes | Yes | No | Persistent |
-| **alwaysdata Free** ([offers](https://www.alwaysdata.com/en/offers/)) | Yes, for life | Yes | No | 1 GB |
+| **alwaysdata Free** ([offers](https://www.alwaysdata.com/en/offers/)) | Yes, for life | Yes | **No** | 256 MB / 1 GB |
+| **Northflank Sandbox** ([pricing](https://northflank.com/pricing)) | Yes | Yes | Official page says no; some regions ask for verification | ~1 GB / ephemeral |
+| **Serv00** ([site](https://www.serv00.com/)) | Yes | Yes | **No** | 512 MB / 3 GB |
+| **Home device + Tailscale Funnel** ([docs](https://tailscale.com/docs/features/tailscale-funnel)) | Yes | Yes | **No** | your hardware |
+| Oracle Cloud Always Free | Yes, forever | Yes | **Yes** (verification) | 12 GB / 200 GB — excluded |
+
+**Recommended: alwaysdata + Telegram.** No card, no hardware, no sleep timer,
+free for life. Exact steps in [`deploy/alwaysdata.md`](deploy/alwaysdata.md)
+with a paste-ready env block in
+[`deploy/alwaysdata.env.example`](deploy/alwaysdata.env.example). No PR is
+needed — that guide clones the working branch directly.
 
 Ruled out in 2026: Koyeb (free plan closed to new users), Hugging Face Docker
 Spaces (PRO required), PythonAnywhere (WSGI-only + outbound allowlist), Zeabur
-(auto-sleep), Fly.io/Railway (trial credit), Render free (sleeps).
+(no new signups / auto-sleep), Fly.io/Railway (trial credit), Render free
+(sleeps). A real FastAPI + Telethon project tested the same no-card hunt and
+landed on alwaysdata — see its
+[README](https://github.com/ramwanstream/tg-stream).
 
 ### Durability without a disk
 
-Free PaaS disks are wiped on redeploy — which is exactly why Storage1024 is
+Free hosts have tiny or ephemeral disks — which is exactly why Storage1024 is
 **chat app as database**. Use Telegram (primary) or the GitHub fallback:
 
 | Backend | Data lives in | Secrets | Limit |
@@ -82,12 +93,9 @@ Free PaaS disks are wiped on redeploy — which is exactly why Storage1024 is
 | `local` | `DATA_DIR` on the host | none | needs a persistent volume |
 
 `STORAGE_BACKEND=auto` picks telegram → github → local. Set it explicitly to
-`telegram` on Northflank so a bad config fails loudly in `/api/health` instead
-of silently writing to a disposable disk. The exact Northflank + Telegram
-walkthrough is in [`deploy/northflank.md`](deploy/northflank.md), with
-paste-ready variables in [`deploy/northflank.env.example`](deploy/northflank.env.example).
-For sleeping hosts, `.github/workflows/keep-alive.yml` pings `/api/health`
-every 10 minutes.
+`telegram` on any free host so a bad config fails loudly in `/api/health`
+instead of silently writing to a disposable disk. For hosts that do sleep,
+`.github/workflows/keep-alive.yml` pings `/api/health` every 10 minutes.
 
 ## Deploying to Render (optional — it sleeps)
 

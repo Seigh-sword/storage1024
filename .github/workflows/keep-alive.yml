@@ -1,5 +1,5 @@
-# OPTIONAL: only needed on hosts that sleep (Render / Zeabur / HF Spaces).
-# Always-on hosts (Northflank, Oracle, home server) do not need this.
+# OPTIONAL: a free uptime check, and required on hosts that sleep
+# (Render / Zeabur / HF Spaces). The no-card always-on hosts do not need it.
 # Set repository variable APP_URL to e.g. https://your-app.example.com
 # GitHub disables scheduled workflows after 60 days of repo inactivity:
 # make a commit or re-enable the workflow to keep the pings coming.
