@@ -5,7 +5,7 @@ Simple Ruby client for Storage1024.
 ### Requirements
 
 ```ruby
-require './storage1024'
+require_relative 'libraries/ruby/storage1024'
 ```
 
 ### Usage

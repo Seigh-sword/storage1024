@@ -1,0 +1,28 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# Deploy from the dashboard with "New +" -> "Blueprint", or set the service
+# up manually with the same values.
+services:
+  - type: web
+    name: storage1024
+    runtime: python
+    plan: free
+    region: singapore
+    healthCheckPath: /api/health
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn bridge:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: STORAGE_BACKEND
+        value: auto
+      # Prompted at deploy time. Leave them empty to boot in local mode.
+      - key: API_ID
+        sync: false
+      - key: API_HASH
+        sync: false
+      - key: TELEGRAM_SESSION
+        sync: false
+      - key: CHANNEL_ID
+        sync: false
+      - key: CREATE_PROJECT_KEY
+        sync: false

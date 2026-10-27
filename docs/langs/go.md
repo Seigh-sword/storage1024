@@ -1,36 +1,37 @@
 # Go SDK
 
-Native Go client for Storage1024.
+Native Go client. The library is a single file in this repository; copy it into
+your module (or publish it under your own module path) rather than using `go get`.
 
 ### Installation
 
 ```bash
-go get github.com/Seigh-sword/storage1024-go # Example path
+cp libraries/go/storage1024.go ./storage1024/
 ```
 
 ### Setup
 
 ```go
-import "storage1024"
+import "your/module/storage1024"
 
 s1024 := storage1024.New()
 s1024.SetUserID("YOUR_PROJECT_ID")
 s1024.SetToken("YOUR_TOKEN")
+// s1024.APIBase = "http://localhost:8000/api"
 ```
 
 ### Global Variables
 
 ```go
-// Read a variable
-val, _ := s1024.GetGV("score")
-fmt.Println("Score:", val)
-
-// Write a variable
-s1024.AddGV("score", "9001")
+val, err := s1024.GetGV("score")
+err = s1024.AddGV("score", "9001")
 ```
 
 ### File Upload
 
 ```go
-s1024.UploadFile("my_image", "./photo.jpg")
+err := s1024.UploadFile("my_image", "./photo.jpg")
 ```
+
+`UploadFile` now uses `multipart.Writer.FormDataContentType()` and checks the
+HTTP status, so errors are reported instead of silently ignored.

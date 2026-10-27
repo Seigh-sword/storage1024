@@ -4,7 +4,7 @@ Native Java library for cloud storage and variables.
 
 ### Installation
 
-Add `Storage1024.java` to your project source.
+Copy `libraries/java/Storage1024.java` into your project source (Java 11+).
 
 ### Usage
 

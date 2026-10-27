@@ -18,3 +18,10 @@ Storage1024 gives you two core primitives:
 
 - **Global Variables (GVs)** — Key-value pairs that persist in the cloud. Perfect for syncing state between devices, games, or services.
 - **File Storage** — Upload files (images, JSON, assets, binaries) and retrieve them via a stable URL.
+
+### Reliability
+
+The original deployment died when its Render service was removed. The server now starts
+without Telegram secrets (it falls back to local storage), reports its state at
+`/api/health`, and never treats a failed index read as an empty database. See the
+REST API page for the deployment options.

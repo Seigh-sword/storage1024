@@ -384,7 +384,7 @@ header p {
 
 .item-meta {
     font-size: 0.7rem;
-    color: var(--text-muted);
+    color: var(--text-dim);
 }
 
 .item-actions {
@@ -406,3 +406,97 @@ textarea#gv-value {
     resize: vertical;
 }
 
+
+/* ---------------------------------------------------------------------------
+   Fixes for elements that had markup but no styles (dashboard grid, modals,
+   token boxes, buttons). Previously the cards stacked and the modals were
+   transparent, which made the dashboard look broken.
+   --------------------------------------------------------------------------- */
+:root {
+    --text-muted: var(--text-dim); /* legacy alias used by older markup */
+}
+
+#logout-btn { display: none; font-size: 0.8rem; padding: 6px 12px; }
+.nav-link { color: var(--text-dim); text-decoration: none; font-size: 0.9rem; margin-right: 20px; }
+.nav-link:hover { color: var(--text); }
+
+#auth-tabs {
+    display: flex;
+    gap: 0.75rem;
+    width: 100%;
+}
+#auth-tabs button { flex: 1; }
+#auth-tabs button.active {
+    background: transparent;
+    color: var(--primary);
+}
+#login-form { display: none; margin-top: 2rem; }
+#signup-form { display: block; margin-top: 2rem; }
+.auth-box input, .token-generator-form input, .token-generator-form select {
+    border: 1px solid var(--glass-border);
+    border-bottom: 2px solid var(--glass-border);
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    margin-bottom: 1rem;
+}
+.token-generator-form select {
+    background: #111114;
+    color: var(--text);
+    width: 100%;
+}
+#login-form button, #signup-form button { width: 100%; }
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 1.5rem;
+    align-items: start;
+}
+.project-card { cursor: default; }
+.project-card h4 { font-size: 1rem; margin-bottom: 1rem; color: var(--text-dim); }
+.token-generator-section { margin-top: 2rem; }
+.stat-summary { margin-top: 1rem; font-size: 0.8rem; }
+
+.modal-content {
+    background: #141418;
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 2rem;
+    width: min(560px, calc(100vw - 2rem));
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+}
+.modal-content h2 { margin-bottom: 0.75rem; }
+.modal-note { color: var(--text-dim); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.25rem; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; }
+
+.token-box {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.token-box label { font-size: 0.75rem; color: var(--text-dim); }
+.token-box code { word-break: break-all; font-size: 0.8rem; color: var(--primary); }
+.token-box .btn-secondary { align-self: flex-start; font-size: 0.75rem; padding: 0.4rem 0.9rem; }
+
+.btn-secondary { transition: border-color 0.2s, background 0.2s; }
+.btn-secondary:hover { border-color: var(--primary); background: rgba(255, 255, 255, 0.06); }
+.btn-secondary.small { padding: 0.4rem 0.8rem; font-size: 0.75rem; border-radius: 8px; }
+.btn-secondary.danger { color: #fca5a5; }
+.btn-secondary.danger:hover { border-color: #ef4444; }
+
+@media (max-width: 700px) {
+    body { padding: 1rem; }
+    nav { flex-wrap: wrap; gap: 1rem; }
+    .dashboard-grid { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 2.5rem; }
+    header h1 { font-size: 2rem; }
+    .item-row { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    .item-actions { flex-wrap: wrap; }
+}

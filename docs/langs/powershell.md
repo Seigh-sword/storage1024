@@ -5,7 +5,7 @@ Native Windows scripting with a clean module.
 ### Requirements
 
 ```powershell
-Import-Module ./Storage1024.psm1
+Import-Module ./libraries/powershell/Storage1024.psm1  # requires PowerShell 6.1+ for -Form
 ```
 
 ### Usage

@@ -5,6 +5,7 @@ Native Kotlin client for JVM and Android projects.
 ### Setup
 
 ```kotlin
+// Copy libraries/kotlin/Storage1024.kt into your project.
 import com.storage1024.Storage1024
 
 val s1024 = Storage1024()

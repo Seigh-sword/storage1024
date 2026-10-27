@@ -1,6 +1,6 @@
 # C / C++
 
-Use the header-only C++ library or talk directly to the REST API using libcurl.
+Use the header-only C++ library (copy `libraries/cpp/storage1024.h` into your project) or talk directly to the REST API using libcurl.
 
 ### Header-only Library
 
@@ -38,6 +38,7 @@ struct curl_slist *headers = NULL;
 headers = curl_slist_append(headers, "Authorization: Bearer YOUR_TOKEN");
 
 curl_easy_setopt(curl, CURLOPT_URL, "https://storage1024.onrender.com/api/projects/YOUR_ID/gv/score");
+// Response: {"alias":"score","value":"9001"}
 curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 curl_easy_perform(curl);
 ```

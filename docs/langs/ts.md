@@ -5,8 +5,12 @@ First-class TypeScript support via the NPM package. Works in React, Next.js, Vit
 ### Installation
 
 ```bash
-npm install storage1024
+# From this repository (the package is not published to npm yet):
+npm install ./libraries/s1024
 ```
+
+The UMD client targets Node 18+ and modern browsers. Call
+`s1024.set_api_base('https://your-host/api')` if you self-host.
 
 ### TypeScript Setup
 
@@ -15,6 +19,7 @@ import s1024 from 'storage1024';
 
 s1024.set_userID('YOUR_PROJECT_ID');
 s1024.set_token('YOUR_TOKEN');
+// s1024.set_api_base('https://your-host/api');
 
 const score: string = await s1024.get_gv('score');
 console.log(score);

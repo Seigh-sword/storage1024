@@ -1,23 +1,34 @@
 # Storage1024 Python Client
 
-Native Python client for Storage1024.
+Synchronous client for Storage1024 (files + global variables).
 
 ## Installation
 
+Until the package is published to PyPI, install it from this repository:
+
 ```bash
-pip install storage1024
+pip install ./libraries/python
 ```
+
+Or copy the `storage1024/` folder into your project (`pip install requests`).
 
 ## Usage
 
 ```python
 from storage1024 import Storage1024
 
-s1024 = Storage1024()
+s1024 = Storage1024()  # or Storage1024("http://localhost:8000/api")
 s1024.set_userid("YOUR_ID")
 s1024.set_token("YOUR_TOKEN")
 
-# Get a global variable
-val = s1024.get_gv("my_var")
-print(val)
+s1024.add_gv("score", "9001")
+print(s1024.get_gv("score"))     # 9001
+print(s1024.gv_json())           # {'score': '9001'}
+
+result = s1024.upload_file("data_file", "./data.json")
+print(result["url"])             # shareable link
+s1024.save_file("data_file", "./copy.json")
 ```
+
+All requests have a 30s timeout and raise `requests.HTTPError` with the API's
+error detail on failure.

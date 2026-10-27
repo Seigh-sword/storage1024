@@ -1,0 +1,6 @@
+-r requirements.txt
+pytest>=8.0,<10
+httpx>=0.27,<1.0
+requests>=2.25,<3
+build>=1.0
+wheel

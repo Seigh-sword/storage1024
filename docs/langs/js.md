@@ -1,43 +1,53 @@
 # Browser / JavaScript
 
-The easiest way to get started in any HTML page. Just drop in the CDN script.
+The easiest way to get started in any HTML page. Just drop in the CDN script,
+which is served by the Storage1024 host itself.
 
 ### Installation
-
-Add the following tag to your `<head>`:
 
 ```html
 <script src="https://storage1024.onrender.com/s1024.js"></script>
 ```
 
-### Setup
+Self-hosting? Point the SDK at your own server before any request:
 
 ```html
 <script>
-  s1024.set_userID('YOUR_PROJECT_ID');
-  s1024.set_token('YOUR_TOKEN');
+  s1024.set_api_base('https://my-host.example/api');
 </script>
+```
+
+### Setup
+
+```javascript
+s1024.set_userID('YOUR_PROJECT_ID');
+s1024.set_token('YOUR_TOKEN');
 ```
 
 ### Global Variables
 
 ```javascript
-// Read a variable
-const score = await s1024.get_gv('score');
-
-// Write a variable
+const score = await s1024.get_gv('score');   // "9001"
 await s1024.add_gv('score', '9001');
-
-// Get all variables as an object
-const all = await s1024.gv_json();
-console.log(all); // { score: "9001", ... }
+const all = await s1024.gv_json();           // { score: "9001" }
+await s1024.delete_gv('score');
 ```
 
-### File Upload
+### Files
 
 ```javascript
-const fileInput = document.querySelector('#file-input');
-const file = fileInput.files[0];
+const file = document.querySelector('#file-input').files[0];
 const result = await s1024.upload_file('my_image', file);
-console.log(`Uploaded: ${result.alias}`);
+console.log(result.url);                     // shareable link, no token inside
+
+const bytes = await s1024.get_file('my_image');  // Uint8Array
+const files = await s1024.list_files();
+```
+
+### Projects & tokens
+
+```javascript
+const project = await s1024.create_project('My Game');
+const publicToken = await s1024.create_token('website', 'public');
+await s1024.revoke_token(publicToken);
 ```

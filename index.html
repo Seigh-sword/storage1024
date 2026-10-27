@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Storage1024 Dashboard</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="icon" type="image/svg+xml" href="/assets/icon.svg">
@@ -12,7 +12,7 @@
 </head>
 <body>
     <div class="glass-bg"></div>
-    <div id="toast-container"></div>
+    <div id="toast-container" aria-live="polite"></div>
 
     <nav>
         <div class="logo">
@@ -20,62 +20,55 @@
             STORAGE<span>1024</span>
         </div>
         <div class="nav-links">
-            <a href="/docs" style="margin-right: 20px; color: var(--text-muted); text-decoration: none; font-size: 0.9rem;">Docs</a>
-            <button id="logout-btn" class="btn-secondary" style="font-size: 0.8rem; padding: 6px 12px; display: none;" onclick="logout()">Logout</button>
+            <a href="/docs" class="nav-link">Docs</a>
+            <button id="logout-btn" class="btn-secondary" onclick="logout()">Logout</button>
         </div>
     </nav>
 
     <main id="main-content">
-        
         <section id="login-state" class="hero">
-            <h1>Your Private Data,<br>Gated & Secure.</h1>
-            <p>High-performance object storage for your next big project. Zero logs, zero limits, absolute privacy.</p>
-            
+            <h1>Your Private Data,<br>Gated &amp; Secure.</h1>
+            <p>High-performance object storage for your next big project. Files and global variables behind one tiny API.</p>
+
             <div class="auth-box">
                 <div id="auth-tabs">
-                    <button id="tab-login" class="btn-primary" style="background: none; border: 1px solid var(--glass-border);">Login</button>
-                    <button id="tab-signup" class="btn-primary">Sign Up</button>
-                </div>
-                
-                <div id="login-form" style="display: none; margin-top: 2rem;">
-                    <input type="text" id="login-token-input" placeholder="Enter your Access Token (;qi= or ;gg=)">
-                    <button id="login-btn" class="btn-primary" style="width: 100%;">Enter Dashboard</button>
+                    <button id="tab-login" class="btn-primary" type="button">Login</button>
+                    <button id="tab-signup" class="btn-primary" type="button">Sign Up</button>
                 </div>
 
-                <div id="signup-form" style="margin-top: 2rem;">
-                    <input type="text" id="signup-name-input" placeholder="Name your new account/project...">
-                    <button id="signup-btn" class="btn-primary" style="width: 100%;">Create Account</button>
+                <div id="login-form">
+                    <input type="text" id="login-token-input" placeholder="Enter your Access Token (;qi= or ;gg=)" autocomplete="off">
+                    <button id="login-btn" class="btn-primary" type="button">Enter Dashboard</button>
+                </div>
+
+                <div id="signup-form">
+                    <input type="text" id="signup-name-input" placeholder="Name your new account/project..." autocomplete="off">
+                    <button id="signup-btn" class="btn-primary" type="button">Create Account</button>
                 </div>
             </div>
         </section>
 
-        
-        <section id="dashboard-state" style="display: none;">
+        <section id="dashboard-state">
             <header>
                 <h1>Welcome Back, <span id="user-name">User</span></h1>
-                <p>Manage your files and generate secure access tokens.</p>
+                <p>Manage your files, variables and access tokens.</p>
             </header>
 
             <div class="dashboard-grid">
-                
                 <div class="project-card large">
                     <div id="project-info">
                         <h3>Account Details</h3>
                         <p id="project-id-display" class="meta">ID: --</p>
-                        
-                        <div class="token-generator-section" style="margin-top: 2rem;">
+
+                        <div class="token-generator-section">
                             <h4>Generate New Access Token</h4>
                             <div class="token-generator-form">
                                 <input type="text" id="token-alias" placeholder="Token Name (e.g. My Website)">
-                                <div class="checkbox-group">
-                                    <label class="checkbox-item">
-                                        <input type="checkbox" id="token-is-private" checked> Private (;qi=)
-                                    </label>
-                                    <label class="checkbox-item">
-                                        <input type="checkbox" id="token-is-public"> Public (;gg=)
-                                    </label>
-                                </div>
-                                <button id="generate-token-btn" class="btn-primary">Generate Token</button>
+                                <select id="token-type" aria-label="Token type">
+                                    <option value="private">Private (;qi=) — full access</option>
+                                    <option value="public">Public (;gg=) — read + upload</option>
+                                </select>
+                                <button id="generate-token-btn" class="btn-primary" type="button">Generate Token</button>
                             </div>
                         </div>
                     </div>
@@ -84,8 +77,8 @@
                 <div id="file-explorer-card" class="project-card large">
                     <div class="card-header">
                         <h3>File Explorer</h3>
-                        <button class="btn-secondary" onclick="document.getElementById('file-upload-input').click()">+ Upload File</button>
-                        <input type="file" id="file-upload-input" style="display: none;" onchange="handleFileUpload(this)">
+                        <button class="btn-secondary" type="button" onclick="document.getElementById('file-upload-input').click()">+ Upload File</button>
+                        <input type="file" id="file-upload-input" hidden onchange="handleFileUpload(this)">
                     </div>
                     <div id="file-list" class="item-list">
                         <p class="meta">No files uploaded yet.</p>
@@ -95,7 +88,7 @@
                 <div id="gv-editor-card" class="project-card large">
                     <div class="card-header">
                         <h3>Global Variables</h3>
-                        <button class="btn-secondary" onclick="showAddGVModal()">+ Add GV</button>
+                        <button class="btn-secondary" type="button" onclick="showAddGVModal()">+ Add GV</button>
                     </div>
                     <div id="gv-list" class="item-list">
                         <p class="meta">No variables set.</p>
@@ -106,46 +99,58 @@
                     <div class="card-header">
                         <h3>Access Tokens</h3>
                     </div>
-                    <div id="token-list" class="item-list">
-                        
-                    </div>
+                    <div id="token-list" class="item-list"></div>
                 </div>
-
             </div>
         </section>
     </main>
 
-    
-    <div id="gv-modal" class="modal">
+    <div id="gv-modal" class="modal" role="dialog" aria-modal="true" aria-label="Global variable editor">
         <div class="modal-content">
             <h2>Add/Edit Global Variable</h2>
             <input type="text" id="gv-alias" placeholder="Variable Name (e.g. site_title)">
             <textarea id="gv-value" placeholder="Variable Value (JSON or String)"></textarea>
             <div class="modal-actions">
-                <button class="btn-secondary" onclick="closeModal('gv-modal')">Cancel</button>
-                <button id="save-gv-btn" class="btn-primary">Save Variable</button>
+                <button class="btn-secondary" type="button" onclick="closeModal('gv-modal')">Cancel</button>
+                <button id="save-gv-btn" class="btn-primary" type="button">Save Variable</button>
             </div>
         </div>
     </div>
 
-    
-    <div id="modal" class="modal">
+    <div id="modal" class="modal" role="dialog" aria-modal="true" aria-label="Account created">
         <div class="modal-content">
-            <div id="modal-success" style="display: none;">
-                <h2>Account Created! </h2>
-                <p>This is your **Master Private Token**. Save it now; you will need it to login next time!</p>
-                <div class="token-box">
-                    <label>Master Token (Keep safe!):</label>
-                    <code id="success-priv"></code>
-                    <button class="btn-secondary" onclick="copyToken('success-priv')" style="margin-top: 5px; font-size: 0.7rem;">Copy Token</button>
-                </div>
-                <div class="modal-actions">
-                    <button id="apply-token-btn" class="btn-primary">Apply & Enter Dashboard</button>
-                </div>
+            <h2>Account Created!</h2>
+            <p class="modal-note">These tokens are shown only once more in your dashboard. Save the <strong>Private Master Token</strong> now — it is your login.</p>
+            <div class="token-box">
+                <label>Master Token (keep safe!):</label>
+                <code id="success-priv"></code>
+                <button class="btn-secondary" type="button" onclick="copyToken('success-priv')">Copy</button>
+            </div>
+            <div class="token-box">
+                <label>Public Token (for your apps):</label>
+                <code id="success-pub"></code>
+                <button class="btn-secondary" type="button" onclick="copyToken('success-pub')">Copy</button>
+            </div>
+            <div class="modal-actions">
+                <button id="apply-token-btn" class="btn-primary" type="button">Apply &amp; Enter Dashboard</button>
             </div>
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <div id="token-modal" class="modal" role="dialog" aria-modal="true" aria-label="New token">
+        <div class="modal-content">
+            <h2>Token Generated</h2>
+            <p class="modal-note">Copy it now. Lost tokens can be revoked and replaced.</p>
+            <div class="token-box">
+                <code id="generated-token"></code>
+                <button class="btn-secondary" type="button" onclick="copyToken('generated-token')">Copy</button>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" type="button" onclick="closeModal('token-modal')">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/app.js"></script>
 </body>
 </html>

@@ -1,37 +1,79 @@
-$STORAGE1024_API = "https://storage1024.onrender.com/api"
-$STORAGE1024_TOKEN = ""
-$STORAGE1024_USERID = ""
+# Storage1024 PowerShell module (PowerShell 6.1+ for multipart -Form).
+$script:STORAGE1024_API = if ($env:STORAGE1024_API) { $env:STORAGE1024_API } else { "https://storage1024.onrender.com/api" }
+$script:STORAGE1024_TOKEN = ""
+$script:STORAGE1024_USERID = ""
+
+function Set-S1024ApiBase {
+    param([Parameter(Mandatory = $true)][string]$Url)
+    $script:STORAGE1024_API = $Url.TrimEnd('/')
+}
 
 function Set-S1024Token {
-    param($token)
-    $script:STORAGE1024_TOKEN = $token
+    param([Parameter(Mandatory = $true)][string]$Token)
+    $script:STORAGE1024_TOKEN = $Token
 }
 
 function Set-S1024UserID {
-    param($id)
-    $script:STORAGE1024_USERID = $id
+    param([Parameter(Mandatory = $true)][string]$Id)
+    $script:STORAGE1024_USERID = $Id
+}
+
+function Get-S1024Url {
+    param([string]$Suffix = "")
+    $id = [uri]::EscapeDataString($script:STORAGE1024_USERID)
+    return "$script:STORAGE1024_API/projects/$id$Suffix"
+}
+
+function Get-S1024Headers {
+    return @{ "Authorization" = "Bearer $script:STORAGE1024_TOKEN" }
 }
 
 function Get-S1024GV {
-    param($name)
-    $headers = @{ "Authorization" = "Bearer $STORAGE1024_TOKEN" }
-    $response = Invoke-RestMethod -Uri "$STORAGE1024_API/projects/$STORAGE1024_USERID/gv/$name" -Headers $headers
+    param([Parameter(Mandatory = $true)][string]$Name)
+    $url = Get-S1024Url -Suffix ("/gv/" + [uri]::EscapeDataString($Name))
+    $response = Invoke-RestMethod -Uri $url -Headers (Get-S1024Headers)
     return $response.value
 }
 
-function Add-S1024GV {
-    param($name, $value)
-    $headers = @{ "Authorization" = "Bearer $STORAGE1024_TOKEN" }
-    $body = @{ alias = $name; value = $value } | ConvertTo-Json
-    $response = Invoke-RestMethod -Method Post -Uri "$STORAGE1024_API/projects/$STORAGE1024_USERID/gv" -Headers $headers -Body $body -ContentType "application/json"
+function Get-S1024AllGV {
+    $response = Invoke-RestMethod -Uri (Get-S1024Url -Suffix "/gv") -Headers (Get-S1024Headers)
     return $response
+}
+
+function Add-S1024GV {
+    param(
+        [Parameter(Mandatory = $true)][string]$Name,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Value
+    )
+    $body = @{ alias = $Name; value = $Value } | ConvertTo-Json
+    return Invoke-RestMethod -Method Post -Uri (Get-S1024Url -Suffix "/gv") `
+        -Headers (Get-S1024Headers) -Body $body -ContentType "application/json"
+}
+
+function Remove-S1024GV {
+    param([Parameter(Mandatory = $true)][string]$Name)
+    $url = Get-S1024Url -Suffix ("/gv/" + [uri]::EscapeDataString($Name))
+    return Invoke-RestMethod -Method Delete -Uri $url -Headers (Get-S1024Headers)
 }
 
 function Send-S1024File {
-    param($alias, $path)
-    $headers = @{ "Authorization" = "Bearer $STORAGE1024_TOKEN" }
-    $response = Invoke-RestMethod -Method Post -Uri "$STORAGE1024_API/projects/$STORAGE1024_USERID/upload" -Headers $headers -Form @{ file = Get-Item $path; alias = $alias }
-    return $response
+    param(
+        [Parameter(Mandatory = $true)][string]$Alias,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+    if (-not (Test-Path -LiteralPath $Path)) { throw "File not found: $Path" }
+    return Invoke-RestMethod -Method Post -Uri (Get-S1024Url -Suffix "/upload") `
+        -Headers (Get-S1024Headers) -Form @{ file = Get-Item -LiteralPath $Path; alias = $Alias }
 }
 
-Export-ModuleMember -Function Set-S1024Token, Set-S1024UserID, Get-S1024GV, Add-S1024GV, Send-S1024File
+function Get-S1024File {
+    param(
+        [Parameter(Mandatory = $true)][string]$Alias,
+        [Parameter(Mandatory = $true)][string]$Output
+    )
+    $url = Get-S1024Url -Suffix ("/files/" + [uri]::EscapeDataString($Alias))
+    Invoke-WebRequest -Uri $url -Headers (Get-S1024Headers) -OutFile $Output
+}
+
+Export-ModuleMember -Function Set-S1024ApiBase, Set-S1024Token, Set-S1024UserID, `
+    Get-S1024GV, Get-S1024AllGV, Add-S1024GV, Remove-S1024GV, Send-S1024File, Get-S1024File

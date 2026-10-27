@@ -1,9 +1,23 @@
+# Secrets
 .env
 *.session
 *.session_string
+
+# Python
 __pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Node
 node_modules/
+
+# Local backend data (never commit user files)
+data/
+
+# Build / scratch
+build/
 .DS_Store
-storage.session
-storage.session_string
 restored_test.txt

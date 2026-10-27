@@ -4,12 +4,12 @@ Native PHP client for Storage1024. Works with standard PHP 7.4+ and 8.0+.
 
 ### Requirements
 
-Requires `php-curl` extension for file uploads.
+Requires the `php-curl` extension (used for all requests now).
 
 ### Setup
 
 ```php
-require 'Storage1024.php';
+require 'libraries/php/Storage1024.php';
 use Storage1024\Storage1024;
 
 $s1024 = new Storage1024();

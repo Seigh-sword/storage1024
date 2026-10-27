@@ -106,3 +106,23 @@ nav {
     .docs-sidebar { position: static; flex-direction: row; flex-wrap: wrap; margin-bottom: 2rem; }
     .sidebar-group { display: none; }
 }
+
+/* README-style tables, lists and links in the API reference. */
+.markdown-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-size: 0.9rem;
+}
+.markdown-body th, .markdown-body td {
+    border: 1px solid var(--glass-border);
+    padding: 0.6rem 0.8rem;
+    text-align: left;
+    vertical-align: top;
+}
+.markdown-body th { background: rgba(var(--primary-rgb), 0.12); color: var(--text); }
+.markdown-body td { color: var(--text-dim); }
+.markdown-body td code { white-space: nowrap; }
+.markdown-body ul, .markdown-body ol { padding-left: 1.5rem; line-height: 1.9; color: var(--text-dim); }
+.markdown-body a { color: var(--primary); }
+.markdown-body hr { border: none; border-top: 1px solid var(--glass-border); margin: 2rem 0; }

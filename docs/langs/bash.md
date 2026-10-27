@@ -5,7 +5,8 @@ Script with cURL for automation and CI/CD.
 ### Requirements
 
 ```bash
-source ./storage1024.sh
+source ./libraries/bash/storage1024.sh
+# Override the host with: export STORAGE1024_API="http://localhost:8000/api"
 ```
 
 ### Usage

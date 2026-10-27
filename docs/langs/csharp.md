@@ -4,7 +4,7 @@ Integrate with .NET using the native client class.
 
 ### Installation
 
-Include `Storage1024.cs` in your project.
+Copy `libraries/csharp/Storage1024.cs` into your project (requires .NET 5+ for `System.Text.Json`).
 
 ### Usage
 
@@ -16,7 +16,7 @@ s1024.SetUserID("YOUR_PROJECT_ID");
 s1024.SetToken("YOUR_TOKEN");
 
 // Read a variable
-string score = await s1024.GetGV("score");
+string score = await s1024.GetGV("score");   // returns the value, not raw JSON
 Console.WriteLine($"Score: {score}");
 
 // Write a variable

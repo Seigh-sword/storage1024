@@ -1,20 +1,19 @@
 {
   "name": "storage1024",
-  "version": "1.0.0",
-  "description": "Premium High-performance object storage client library for Frontend and Node.js.",
+  "version": "1.1.0",
+  "description": "Object storage and global variables client for Storage1024.",
   "main": "s1024.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "files": ["s1024.js"],
+  "engines": {
+    "node": ">=18"
   },
-  "keywords": [
-    "storage",
-    "secure",
-    "s1024",
-    "cloud"
-  ],
+  "scripts": {
+    "test": "node --check s1024.js"
+  },
+  "keywords": ["storage", "s1024", "cloud"],
   "author": "Seigh-sword",
   "license": "MIT",
-  "dependencies": {
+  "optionalDependencies": {
     "node-fetch": "^3.0.0"
   }
 }

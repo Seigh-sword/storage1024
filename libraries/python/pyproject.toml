@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "storage1024"
-version = "1.0.0"
+version = "1.1.0"
 authors = [
   { name="Seigh-sword", email="zack.yt.7085@gmail.com" },
 ]
@@ -22,3 +22,4 @@ dependencies = [
 
 [project.urls]
 "Homepage" = "https://storage1024.onrender.com"
+"Source" = "https://github.com/Seigh-sword/storage1024"

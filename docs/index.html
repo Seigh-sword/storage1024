@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Storage1024 | Developer Documentation</title>
     <meta name="description" content="Integrate Storage1024 into any project. Polyglot SDK documentation.">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/docs/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="icon" type="image/svg+xml" href="/assets/icon.svg">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- marked (MIT) is vendored so docs work without third-party CDNs. -->
+    <script src="/docs/marked.umd.js"></script>
 </head>
 <body class="minimalist">
     <div class="glass-bg"></div>
@@ -24,6 +25,7 @@
         </div>
         <div class="nav-links">
             <a href="/" class="btn-secondary" style="text-decoration:none">Dashboard</a>
+            <a href="/api/health" class="btn-secondary" style="text-decoration:none">Status</a>
         </div>
     </nav>
 
@@ -49,6 +51,7 @@
             <button class="sidebar-link" onclick="loadDoc('java', this)">Java</button>
             <button class="sidebar-link" onclick="loadDoc('ruby', this)">Ruby</button>
             <span class="sidebar-group">Shell & Scripting</span>
+            <button class="sidebar-link" onclick="loadDoc('api', this)">REST API</button>
             <button class="sidebar-link" onclick="loadDoc('curl', this)">cURL</button>
             <button class="sidebar-link" onclick="loadDoc('bash', this)">Bash</button>
             <button class="sidebar-link" onclick="loadDoc('powershell', this)">PowerShell</button>
