@@ -72,19 +72,22 @@ Spaces (PRO required), PythonAnywhere (WSGI-only + outbound allowlist), Zeabur
 
 ### Durability without a disk
 
-Free PaaS disks are wiped on redeploy, so use a remote backend:
+Free PaaS disks are wiped on redeploy — which is exactly why Storage1024 is
+**chat app as database**. Use Telegram (primary) or the GitHub fallback:
 
 | Backend | Data lives in | Secrets | Limit |
 | --- | --- | --- | --- |
-| `telegram` | Your Telegram channel | 4 vars | 1800 MB files |
-| `github` | A private GitHub repo | `GITHUB_TOKEN`, `GITHUB_REPO` | `GITHUB_MAX_FILE_MB` (20 default) |
+| `telegram` **(primary)** | Your Telegram channel | 4 vars | 1800 MB files |
+| `github` (fallback) | A private GitHub repo | `GITHUB_TOKEN`, `GITHUB_REPO` | `GITHUB_MAX_FILE_MB` (20 default) |
 | `local` | `DATA_DIR` on the host | none | needs a persistent volume |
 
-`STORAGE_BACKEND=auto` picks telegram → github → local. The GitHub backend is
-new: a private repo + a fine-grained token with **Contents: read/write**
-survives any redeploy, needs no card, and is the easiest way to get durable
-storage on an ephemeral free host. For sleeping hosts,
-`.github/workflows/keep-alive.yml` pings `/api/health` every 10 minutes.
+`STORAGE_BACKEND=auto` picks telegram → github → local. Set it explicitly to
+`telegram` on Northflank so a bad config fails loudly in `/api/health` instead
+of silently writing to a disposable disk. The exact Northflank + Telegram
+walkthrough is in [`deploy/northflank.md`](deploy/northflank.md), with
+paste-ready variables in [`deploy/northflank.env.example`](deploy/northflank.env.example).
+For sleeping hosts, `.github/workflows/keep-alive.yml` pings `/api/health`
+every 10 minutes.
 
 ## Deploying to Render (optional — it sleeps)
 
@@ -119,8 +122,9 @@ storage on an ephemeral free host. For sleeping hosts,
 1. Get `API_ID` / `API_HASH` from <https://my.telegram.org>.
 2. Create a private channel and add the account as admin (post / edit / pin
    messages). `CHANNEL_ID` is the numeric id, usually `-100...`.
-3. Run `PHONE_NUMBER=+91... python generate_session.py` locally, then set
-   `TELEGRAM_SESSION` to the printed string (or keep the generated
+3. Run `PHONE_NUMBER=+91... python generate_session.py` locally; it prints
+   both `TELEGRAM_SESSION` and a list of your channels with their ids, so you
+   can fill `CHANNEL_ID` without guessing. Set `TELEGRAM_SESSION` to the printed string (or keep the generated
    `storage.session_string` file — it is gitignored).
 4. The index is stored as a **pinned JSON document** in that channel. If
    pinning is not permitted, the server writes a small searchable locator

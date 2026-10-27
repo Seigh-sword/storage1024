@@ -19,14 +19,18 @@ Hugging Face Docker Spaces (PRO required), PythonAnywhere (WSGI-only,
 outbound allowlist), Zeabur (auto-sleep), Fly.io/Railway (trial credit), and
 Render free (sleeps).
 
-### Durability on ephemeral hosts
+### Durability on ephemeral hosts — CADB
 
-Free PaaS disks are wiped on every deploy. Pick a remote storage backend:
+Storage1024 is **chat app as database**: your Telegram channel holds the index
+and files. That is the primary backend, and it makes an ephemeral disk
+harmless. Set `STORAGE_BACKEND=telegram` with the four Telegram secrets; see
+[`deploy/northflank.md`](https://github.com/Seigh-sword/storage1024/blob/main/deploy/northflank.md)
+for the exact walkthrough.
 
-- `STORAGE_BACKEND=github` — a private repo + fine-grained token. Free, no
-  card, survives redeploys. Files capped by `GITHUB_MAX_FILE_MB` (default 20).
-- `STORAGE_BACKEND=telegram` — the original backend. Four secrets, up to
-  1800 MB files, data lives in your channel.
+- `STORAGE_BACKEND=telegram` — **primary.** Up to 1800 MB files, data lives in
+  your channel, which is also your backup.
+- `STORAGE_BACKEND=github` — optional fallback (private repo + token), files
+  capped by `GITHUB_MAX_FILE_MB` (default 20).
 - `STORAGE_BACKEND=local` — only on a host with a persistent volume.
 
 `auto` selects telegram → github → local based on which secrets exist.

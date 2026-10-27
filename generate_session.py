@@ -4,8 +4,9 @@ Run locally (needs an interactive terminal):
 
     python generate_session.py
 
-Then put the printed string in the TELEGRAM_SESSION environment variable on
-Render, or in .env / ~/.storage1024/config.env for local development.
+Then put the printed string in TELEGRAM_SESSION on your host (Northflank,
+Render, .env or ~/.storage1024/config.env). It also prints the numeric id of
+each of your channels - use one of those for CHANNEL_ID.
 """
 from __future__ import annotations
 
@@ -54,6 +55,15 @@ async def main() -> None:
         out = Path("storage.session_string")
         out.write_text(session_str, encoding="utf-8")
         print(f"\nSession string also saved to '{out}' (gitignored).")
+
+        print("\nYour channels - copy one of these ids into CHANNEL_ID:")
+        found = False
+        async for dialog in client.iter_dialogs():
+            if getattr(dialog, "is_channel", False):
+                print(f"  {dialog.name!r}: {dialog.id}")
+                found = True
+        if not found:
+            print("  (none found - create a private channel in Telegram first)")
 
 
 if __name__ == "__main__":

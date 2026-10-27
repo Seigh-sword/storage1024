@@ -23,6 +23,8 @@ USER app
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import os,urllib.request;urllib.request.urlopen('http://127.0.0.1:%s/api/health' % os.environ.get('PORT','8000'), timeout=4)" || exit 1
+    CMD python -c "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=4)" || exit 1
 
-CMD ["sh", "-c", "exec uvicorn bridge:app --host 0.0.0.0 --port ${PORT} --workers 1"]
+# Port 8000 is pinned: EXPOSE, this command, HEALTHCHECK and the Northflank
+# public port must all agree.
+CMD ["uvicorn", "bridge:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

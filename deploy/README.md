@@ -20,10 +20,13 @@ available and gives copy-paste deployment steps.
 | Render free | Yes | **No** — sleeps | No | No (ephemeral) | Only with a keep-alive ping |
 | Koyeb / HF Spaces / PythonAnywhere / Zeabur / Fly.io | see "Ruled out" below | | | | |
 
-**Recommended combo:** Northflank (always-on, no card) + the **GitHub storage
-backend** (durable, free, no card) — see below. If you already have the
-Telegram API credentials from the original project, use `STORAGE_BACKEND=telegram`
-instead and skip the GitHub setup.
+**Recommended combo:** Northflank (always-on, no card) + the **Telegram
+backend** — Storage1024 is *chat app as database*; the channel is the DB, so
+an ephemeral disk is harmless. **[Full step-by-step guide → `northflank.md`](northflank.md)**
+(paste-ready env vars: [`northflank.env.example`](northflank.env.example)).
+
+The `github` backend below is an optional fallback for people who no longer
+have their Telegram API credentials; it is not the main path.
 
 ## The durability problem (read this first)
 
