@@ -38,6 +38,7 @@ def test_docs_pages_and_no_path_traversal(client):
     assert "REST API" in client.get("/docs/langs/api.md").text
     assert "Free 24/7 Hosting" in client.get("/docs/langs/hosting.md").text
     assert "Zero-Card Hosting" in client.get("/docs/langs/nocard.md").text
+    assert "Cloudflare Workers" in client.get("/docs/langs/workers.md").text
     assert "Storage1024" in client.get("/docs/story.md").text
     assert client.get("/docs/script.js").status_code == 200
     assert client.get("/docs/marked.umd.js").status_code == 200

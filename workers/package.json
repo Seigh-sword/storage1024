@@ -1,0 +1,18 @@
+{
+  "name": "storage1024-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Storage1024 CADB (Telegram channel as database) on Cloudflare Workers free plan",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check src/index.js && node --check build.mjs",
+    "dev": "npm run build && wrangler dev",
+    "dry-run": "npm run build && wrangler deploy --dry-run --outdir dist",
+    "deploy": "npm run build && wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

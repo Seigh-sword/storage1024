@@ -4,10 +4,14 @@
 > display *"To continue your registration and to prevent misuse, you must
 > validate a credit or debit card"* for many signups, especially from India,
 > despite advertising "no card needed". That is an anti-abuse verification
-> hold. **[Read `no-card.md`](no-card.md) instead** — it covers Render free +
-> a 5-minute pinger (uses your existing account), your own device + a free
-> tunnel, Serv00, and a Cloudflare Workers rewrite. None of those ask for a
-> card.
+> hold. **[Read `no-card.md`](no-card.md) instead.**
+>
+> ✅ **Best route, already built:** [`workers.md`](workers.md) — a complete
+> Cloudflare Workers implementation of Storage1024 that still uses your
+> Telegram channel as the database (CADB). Free plan, no card, no sleep,
+> permanent `*.workers.dev` URL, no hardware. It needs only a bot token and a
+> channel id. The other routes (Render free + 5-minute pinger, own device +
+> free tunnel, Serv00) keep the original Python/Telethon code.
 
 Render's free plan is **not** 24/7 on its own (spins down after ~15 minutes
 idle), but a free 5-minute ping fixes that — see Route 1 in
@@ -22,6 +26,7 @@ merge is needed: every guide clones the working branch directly.
 
 | Host | Free? | 24/7? | Card? | RAM / disk | Catch |
 | --- | --- | --- | --- | --- | --- |
+| **Cloudflare Workers (BUILT)** | Yes | **Yes, no sleep** | **No** | 128 MB / KV 1 GB | JS rewrite; 19 MiB/file; 500 mutations/day |
 | **alwaysdata Free** | Yes, for life | Yes | **No** | 256 MB / 1 GB | Personal use only, `*.alwaysdata.net` |
 | **Northflank Sandbox** | Yes | **Yes — "always on, no sleeping"** | Official page says no | ~1 GB / ephemeral | Some regions trigger a card *verification* hold |
 | **Serv00** | Yes | Yes | **No** | 512 MB / 3 GB | Must log in every 90 days; FreeBSD; no SLA |
@@ -29,11 +34,18 @@ merge is needed: every guide clones the working branch directly.
 | Oracle Cloud Always Free | Yes, forever | Yes | Yes, verification only | 12 GB / 200 GB | Card required — ruled out here |
 | Render free | Yes | **No** — sleeps | Sometimes | 512 MB / ephemeral | Cold starts, 750 instance-hours/month |
 
-**Recommended (no card):** **Route 1 in `no-card.md`** — your existing Render
-account + a free UptimeRobot 5-minute monitor. Zero code changes, zero new
-accounts, effectively 24/7. If you got into alwaysdata without a card,
+**Recommended (no card):** **[`workers.md`](workers.md) — Cloudflare Workers
+(Route 4).** It is genuinely free without a card, truly always on, needs no
+hardware, and keeps CADB (the Telegram channel holds the files, GVs and the
+pinned index). Only a bot token + channel id are required.
+[15 offline tests](../workers/test/worker.test.mjs) and
+`wrangler deploy --dry-run` pass.
+
+**Best Python/Telethon path:** Route 1 in [`no-card.md`](no-card.md) — your
+existing Render account + a free UptimeRobot 5-minute monitor. Zero code
+changes and 1800 MB files. If you got into alwaysdata without a card,
 [`alwaysdata.md`](alwaysdata.md) +
-[`alwaysdata.env.example`](alwaysdata.env.example) is the best dedicated host.
+[`alwaysdata.env.example`](alwaysdata.env.example) is a dedicated-host option.
 Storage1024 is **chat app as database**: the Telegram channel holds
 everything, so an ephemeral/limited disk is harmless.
 

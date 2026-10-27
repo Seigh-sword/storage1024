@@ -14,7 +14,13 @@
 | **1. Render free + 5-min pinger** | No (existing account) | No | No | None |
 | **2. Own device + free tunnel** | No | Yes | No | None |
 | **3. Serv00 free shell** | No | No | Manual, up to 72 h | None |
-| **4. Cloudflare Workers rewrite** | No | No | No | Yes (big) |
+| **4. Cloudflare Workers (BUILT)** | No | No | No | Already done — 19 MiB/file |
+
+> ✅ **Route 4 is now built and recommended.** See
+> [Cloudflare Workers](/docs#workers) and the full
+> [`deploy/workers.md`](https://github.com/Seigh-sword/storage1024/blob/arena/1bde6926-storage1024/deploy/workers.md).
+> It needs only a Cloudflare account (email), a Telegram **bot token** and a
+> channel id — no `API_ID`, `API_HASH` or session string.
 
 There is no longer a free 24/7 **container PaaS** that reliably needs no card.
 Every one of them either sleeps, expires, or asks for card verification.
@@ -62,13 +68,35 @@ is **manually reviewed (hours to 72 h)** and sometimes closed. You must log in
 via SSH or the panel at least once every **90 days** or the account is deleted.
 No SLA.
 
-### Route 4 — Cloudflare Workers rewrite
+### Route 4 — Cloudflare Workers (BUILT, recommended)
 
 Workers Free needs no card: 100k requests/day, no sleep, no cold start,
-permanent `*.workers.dev` URL. But Workers can't run Python/Telethon, so the
-app would be rewritten in JavaScript using the **Telegram Bot API** — still
-chat app as database, just via a bot token. Files capped at ~50 MB, and it's a
-second implementation to maintain. Ask the agent and it will build this.
+permanent `*.workers.dev` URL, and static assets are free/unlimited. Workers
+can't run Python/Telethon, so this is a JavaScript implementation using the
+**Telegram Bot API** — still chat app as database: files are channel documents,
+global variables are channel text messages, and the index is a pinned JSON
+document. KV only caches the pointer to that pinned index.
+
+You need a Cloudflare account (email only), a bot token from `@BotFather`, and
+a channel id. That's it — no `API_ID` / `API_HASH` / `TELEGRAM_SESSION`.
+
+```bash
+cd workers
+npm install
+npm test                                  # 15 offline tests
+npx wrangler login
+npx wrangler kv namespace create INDEX    # paste the id into wrangler.toml
+npx wrangler secret put BOT_TOKEN
+npx wrangler secret put CHANNEL_ID
+npx wrangler secret put CREATE_PROJECT_KEY
+npm run deploy
+```
+
+Trade-offs: **19 MiB per file** (Bot API `getFile` download cap), 10 ms CPU
+per request, KV's 1,000 writes/day (~500 mutations/day), and two
+implementations to maintain. Full guide:
+[`deploy/workers.md`](https://github.com/Seigh-sword/storage1024/blob/arena/1bde6926-storage1024/deploy/workers.md)
+· [Cloudflare Workers page](/docs#workers).
 
 ## Hosts that will ask for a card
 

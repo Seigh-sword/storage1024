@@ -29,14 +29,22 @@ remains falls into four buckets:
 | **1. Render free + 5-min pinger** | No (existing account) | No | No | None | Good; 5 GB bandwidth/month |
 | **2. Own device + free tunnel** | No | Yes (phone/laptop) | No | None | Depends on your device |
 | **3. Serv00 free shell** | No | No | **Manual, up to 72 h** | None | No SLA; 90-day login rule |
-| **4. Cloudflare Workers rewrite** | No | No | No | **Yes (big)** | Best; 50 MB/file cap |
+| **4. Cloudflare Workers (BUILT)** | No | No | No | **Already done** | Best; 19 MiB/file cap |
 
-**Route 1 is the fastest and needs zero new accounts.** You already had a
-Render account (that's where `storage1024.onrender.com` lived). Render's free
-plan gives **750 free instance-hours per month**; one service awake 24/7 uses
-~720–744 h, so it fits. The only problem was the 15-minute spin-down — and a
-free 5-minute ping fixes that. [Render free docs](https://render.com/docs/free)
-· [why pings work](https://odown.com/blog/how-to-keep-a-render-free-service-from-sleeping/)
+> **NEW — Route 4 is no longer a proposal.** The Worker implementation now
+> exists in [`workers/`](../workers/) with 15 passing tests, and the exact
+> copy-paste steps are in [`workers.md`](workers.md). It is the only route that
+> is genuinely free, always on, needs no hardware, and needs nothing more from
+> Telegram than a **bot token + channel id** (no `API_ID` / `API_HASH` /
+> session string). **Start there.**
+
+**Route 1 is the fastest if you want to keep the Python build unchanged.** You
+already had a Render account (that's where `storage1024.onrender.com` lived).
+Render's free plan gives **750 free instance-hours per month**; one service
+awake 24/7 uses ~720–744 h, so it fits. The only problem was the 15-minute
+spin-down — and a free 5-minute ping fixes that.
+[Render free docs](https://render.com/docs/free) ·
+[why pings work](https://odown.com/blog/how-to-keep-a-render-free-service-from-sleeping/)
 
 ---
 
@@ -168,24 +176,40 @@ networks. It's fat 512 MB though, and no card, ever.
 
 ---
 
-## Route 4 — Cloudflare Workers rewrite (no card, no hardware, real 24/7)
+## Route 4 — Cloudflare Workers (BUILT — no card, no hardware, real 24/7)
 
 Cloudflare's Workers Free plan needs **no credit card** and gives 100,000
-requests/day with no sleep and no cold start.
+requests/day with no sleep and no cold start. Static assets (the dashboard,
+docs and SDK files) are free and unlimited and do not consume that quota.
 <https://workers.cloudflare.com/> ·
 <https://developers.cloudflare.com/workers/platform/pricing/>
 
-The catch: Workers cannot run Python/Telethon (no raw MTProto sockets). The
-app would be rewritten in JavaScript and use the **Telegram Bot API** over
-HTTPS instead of Telethon — but that is still **chat app as database**: files
-and index live in your Telegram channel, reached via a bot token. You'd get a
-permanent `https://storage1024.<you>.workers.dev` URL, free, 24/7, no card.
+**It is built.** [`workers/`](../workers/) contains a complete JavaScript
+implementation of the Storage1024 API, using the Telegram Bot API instead of
+Telethon (Workers cannot open raw MTProto sockets). It is still **chat app as
+database**: every file is a document message in your Telegram channel, every
+global variable is a text message, and the project index is a pinned JSON
+document. Workers KV only caches the pointer to that pinned index — wipe KV and
+the Worker rebuilds itself from `getChat().pinned_message`.
 
-Trade-offs: Bot API files are capped at ~50 MB up / 20 MB down (vs 1.8 GB with
-Telethon), 10 ms CPU per request, and 100k requests/day. It also means
-maintaining a second implementation alongside the FastAPI one.
+You get a permanent `https://storage1024.<you>.workers.dev` URL, free, always
+on, no card. Only a **bot token** and a **channel id** are needed — no
+`API_ID`, `API_HASH` or `TELEGRAM_SESSION`.
 
-**This is a real option, not a hand-wave — say the word and I'll build it.**
+Trade-offs: Bot API files are capped at ~50 MB up / 20 MB down, so this build
+enforces **19 MiB per file** (vs 1800 MB with Telethon); 10 ms CPU and 100k
+invocations/day; KV's 1,000 writes/day allows ~500 mutations/day. There are
+also two implementations to maintain. Full details and the copy-paste deploy:
+**[`deploy/workers.md`](workers.md)** · docs page: `/docs#workers`.
+
+Verify locally before deploying:
+
+```bash
+cd workers
+npm install
+npm test          # 15 offline tests
+npm run dry-run   # validates config + bundles
+```
 
 ---
 
@@ -214,12 +238,14 @@ disconnect).
 
 ## Bottom line
 
-- **Want it live today with zero code changes?** Route 1: redeploy on your
-  existing Render account and add a UptimeRobot 5-minute monitor on
-  `/api/health`.
+- **Want the technically best free 24/7 with no card and no hardware?** Route
+  4 — **already built**, see [`workers.md`](workers.md). This is the
+  recommended path. It only needs a Cloudflare account (email), a Telegram bot
+  token and a channel id.
+- **Want to keep full Python/Telethon with 1800 MB files and zero code change?**
+  Route 1: redeploy on your existing Render account and add a UptimeRobot
+  5-minute monitor on `/api/health`.
 - **Want zero accounts at all?** Route 2: an old phone/laptop + Cloudflare
   Quick Tunnel.
-- **Want zero hardware and zero card with a real server?** Route 3: Serv00,
-  and accept the manual approval wait.
-- **Want the technically best free 24/7 with no card?** Route 4: let me
-  rewrite it as a Cloudflare Worker.
+- **Want zero hardware, zero card, full Python, and don't mind waiting?** Route
+  3: Serv00, with manual approval and the 90-day login rule.

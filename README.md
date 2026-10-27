@@ -57,8 +57,17 @@ import-without-secrets boot path.
 > show *"you must validate a credit or debit card"* for many signups despite
 > claiming "no card needed". If you have no card, go straight to
 > **[`deploy/no-card.md`](deploy/no-card.md)** (also
-> [`/docs#nocard`](/docs#nocard)) — Render free + a 5-minute pinger, your own
-> device + a free tunnel, Serv00, or a Cloudflare Workers rewrite.
+> [`/docs#nocard`](/docs#nocard)).
+>
+> ✅ **Recommended and already built:** **[`deploy/workers.md`](deploy/workers.md)**
+> (docs: [`/docs#workers`](/docs#workers)). Cloudflare Workers Free needs no
+> card, never sleeps, gives a permanent `*.workers.dev` URL, needs no hardware,
+> and keeps **CADB** — files, global variables and the pinned JSON index all
+> live in your Telegram channel. It is a JavaScript implementation using the
+> Telegram Bot API, so it needs only a **bot token + channel id** (no
+> `API_ID`/`API_HASH`/session). 15 offline tests pass and
+> `wrangler deploy --dry-run` bundles cleanly. Trade-off: **19 MiB per file**
+> instead of 1800 MB.
 
 Render's free plan **spins down after ~15 minutes idle** — a free 5-minute
 ping fixes that, and you already have a Render account. The app is
@@ -69,6 +78,7 @@ systemd unit), so it runs anywhere. Full comparison and copy-paste steps:
 
 | Host | Free | 24/7 | Card | RAM / disk |
 | --- | --- | --- | --- | --- |
+| **Cloudflare Workers (BUILT)** ([guide](deploy/workers.md)) | Yes | **Yes, no sleep** | **No** | 128 MB / KV 1 GB |
 | **alwaysdata Free** ([offers](https://www.alwaysdata.com/en/offers/)) | Yes, for life | Yes | **No** | 256 MB / 1 GB |
 | **Northflank Sandbox** ([pricing](https://northflank.com/pricing)) | Yes | Yes | Official page says no; some regions ask for verification | ~1 GB / ephemeral |
 | **Serv00** ([site](https://www.serv00.com/)) | Yes | Yes | **No** | 512 MB / 3 GB |

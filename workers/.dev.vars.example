@@ -1,0 +1,5 @@
+# Local development only. Copy to `.dev.vars` (gitignored) and fill in.
+# On the deployed Worker, set these with `npx wrangler secret put NAME`.
+BOT_TOKEN=123456789:AAH-replace-me
+CHANNEL_ID=-1001234567890
+CREATE_PROJECT_KEY=replace-with-a-long-random-string

@@ -46,7 +46,7 @@ async function loadDoc(lang, btn) {
     if (btn) btn.classList.add('active');
 
     // Only known docs are fetched - no path traversal from the URL hash.
-    const allowed = new Set(['story', 'api', 'hosting', 'nocard', 'python', 'go', 'rust', 'php', 'js', 'node',
+    const allowed = new Set(['story', 'api', 'hosting', 'nocard', 'workers', 'python', 'go', 'rust', 'php', 'js', 'node',
         'ts', 'cpp', 'csharp', 'java', 'ruby', 'curl', 'bash', 'powershell', 'kotlin']);
     if (!allowed.has(lang)) lang = 'story';
 

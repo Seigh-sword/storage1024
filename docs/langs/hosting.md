@@ -3,6 +3,11 @@
 > 🛑 **No credit card?** Northflank and alwaysdata both show a card
 > verification wall for many signups. Use
 > [Zero-Card Hosting](/docs#nocard) instead.
+>
+> ✅ **Best option, already built:** [Cloudflare Workers](/docs#workers) — free
+> without a card, always on, no hardware, and still CADB (your Telegram channel
+> holds the files, GVs and pinned index). Needs only a bot token and a channel
+> id. Trade-off: 19 MiB per file.
 
 Render's free plan spins down after ~15 minutes of inactivity, so it is not
 24/7 on its own — but a free 5-minute ping fixes that. The app is
@@ -14,6 +19,7 @@ you can move it anywhere. Full copy-paste steps live in
 
 | Host | Free | 24/7 | Card | RAM / disk |
 | --- | --- | --- | --- | --- |
+| **[Cloudflare Workers](/docs#workers) (BUILT)** | Yes | **Yes, no sleep** | **No** | 128 MB / KV 1 GB |
 | **Render free + 5-min pinger** | Yes | Yes | No (existing account) | 512 MB / ephemeral |
 | **[alwaysdata Free](https://www.alwaysdata.com/en/offers/)** | Yes, for life | Yes | No* | 256 MB / 1 GB |
 | [Northflank Sandbox](https://northflank.com/pricing) | Yes | Yes | Official page says no; some regions ask for verification | ~1 GB / ephemeral |
