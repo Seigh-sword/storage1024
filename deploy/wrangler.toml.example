@@ -1,0 +1,13 @@
+# Cloudflare Worker keep-alive pinger (free plan, no credit card).
+#   cp deploy/wrangler.toml.example wrangler.toml
+#   cp deploy/keepalive-worker.js src/index.js   # or set main below
+#   npx wrangler secret put APP_URL              # https://your-service.onrender.com
+#   npx wrangler deploy
+name = "storage1024-keepalive"
+main = "deploy/keepalive-worker.js"
+compatibility_date = "2026-10-27"
+
+# Minimum cron interval on the free plan is 1 minute; 5 is plenty for
+# Render's 15-minute spin-down. Cron Triggers are free on the Workers plan.
+[triggers]
+crons = ["*/5 * * * *"]

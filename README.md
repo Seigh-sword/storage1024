@@ -51,10 +51,17 @@ import-without-secrets boot path.
 
 ---
 
-## Free 24/7 hosting (no card, no Render)
+## Free 24/7 hosting (no card)
 
-Render's free plan **spins down after ~15 minutes idle**, so it cannot be 24/7
-— and 2026 reports say it may ask for a card even on the free tier. The app is
+> ⚠️ **Card verification walls (Oct 2026):** both Northflank and alwaysdata
+> show *"you must validate a credit or debit card"* for many signups despite
+> claiming "no card needed". If you have no card, go straight to
+> **[`deploy/no-card.md`](deploy/no-card.md)** (also
+> [`/docs#nocard`](/docs#nocard)) — Render free + a 5-minute pinger, your own
+> device + a free tunnel, Serv00, or a Cloudflare Workers rewrite.
+
+Render's free plan **spins down after ~15 minutes idle** — a free 5-minute
+ping fixes that, and you already have a Render account. The app is
 now host-agnostic (relative URLs, `PORT`, `Dockerfile`, `docker-compose.yml`,
 systemd unit), so it runs anywhere. Full comparison and copy-paste steps:
 **[`deploy/README.md`](deploy/README.md)** (also at
@@ -68,11 +75,13 @@ systemd unit), so it runs anywhere. Full comparison and copy-paste steps:
 | **Home device + Tailscale Funnel** ([docs](https://tailscale.com/docs/features/tailscale-funnel)) | Yes | Yes | **No** | your hardware |
 | Oracle Cloud Always Free | Yes, forever | Yes | **Yes** (verification) | 12 GB / 200 GB — excluded |
 
-**Recommended: alwaysdata + Telegram.** No card, no hardware, no sleep timer,
-free for life. Exact steps in [`deploy/alwaysdata.md`](deploy/alwaysdata.md)
-with a paste-ready env block in
-[`deploy/alwaysdata.env.example`](deploy/alwaysdata.env.example). No PR is
-needed — that guide clones the working branch directly.
+**Recommended with no card: Render free + a 5-minute UptimeRobot monitor.**
+Zero code changes, zero new accounts, effectively 24/7 — see Route 1 in
+[`deploy/no-card.md`](deploy/no-card.md) and
+[`deploy/render.env.example`](deploy/render.env.example). If you got into
+alwaysdata without a card, [`deploy/alwaysdata.md`](deploy/alwaysdata.md) is
+the best dedicated host. No PR is needed — every guide clones the working
+branch directly.
 
 Ruled out in 2026: Koyeb (free plan closed to new users), Hugging Face Docker
 Spaces (PRO required), PythonAnywhere (WSGI-only + outbound allowlist), Zeabur

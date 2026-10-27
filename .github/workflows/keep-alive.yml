@@ -1,13 +1,17 @@
-# OPTIONAL: a free uptime check, and required on hosts that sleep
-# (Render / Zeabur / HF Spaces). The no-card always-on hosts do not need it.
+# Free keep-alive pinger: REQUIRED on hosts that sleep (Render free, Zeabur,
+# HF Spaces), OPTIONAL as an uptime check on always-on hosts. See
+# deploy/no-card.md - most "no card" hosts now demand card verification.
 # Set repository variable APP_URL to e.g. https://your-app.example.com
-# GitHub disables scheduled workflows after 60 days of repo inactivity:
-# make a commit or re-enable the workflow to keep the pings coming.
+# IMPORTANT: scheduled workflows only run on the repository's DEFAULT branch.
+# Set Settings > Branches > default branch to this branch (NOT a PR/merge).
+# GitHub can delay or skip scheduled runs under load; the 5-minute interval
+# leaves margin before Render's 15-minute spin-down. It also disables schedules
+# after 60 days of repo inactivity - make a commit to re-enable.
 name: Keep the app awake
 
 on:
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -22,5 +26,8 @@ jobs:
             echo "::error::Set repository variable APP_URL (Settings > Secrets and variables > Actions > Variables)."
             exit 1
           fi
-          curl -fsS --retry 5 --retry-delay 10 --max-time 60 \
+          # Ping a real route. Render answers /robots.txt itself while the
+          # service is asleep, so that path would lie about uptime.
+          curl -fsS --retry 3 --retry-delay 10 --retry-all-errors \
+            --max-time 90 -H "User-Agent: storage1024-keepalive/1.0" \
             "${APP_URL%/}/api/health" || exit 1

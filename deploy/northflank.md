@@ -1,9 +1,10 @@
 # Deploy Storage1024 on Northflank (free, 24/7, CADB)
 
-> ⚠️ **No card available?** Northflank's official pricing says "No card
-> needed", but some regions are asked for a card *verification hold* at
-> signup. If that happens to you, stop and use
-> **[`alwaysdata.md`](alwaysdata.md)** — that path needs no card at all.
+> 🛑 **CARD WALL (Oct 2026):** signups from some regions get *"To continue
+> your registration and to prevent misuse, you must validate a credit or
+> debit card"* even though the pricing page says "No card needed". If you hit
+> that screen, stop and read **[`no-card.md`](no-card.md)** — do not waste
+> time retrying. (alwaysdata has the same wall.)
 
 **Northflank's free Sandbox** runs the container 24/7 with no sleep timer,
 while **Telegram is the database** — the whole point of Storage1024 (chat app

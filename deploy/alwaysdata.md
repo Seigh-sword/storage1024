@@ -1,4 +1,11 @@
-# Deploy Storage1024 on alwaysdata (no card, free for life, 24/7)
+# Deploy Storage1024 on alwaysdata (free for life, 24/7)
+
+> 🛑 **CARD WALL (Oct 2026):** alwaysdata's signup now shows *"To continue
+> your registration and to prevent misuse, you must validate a credit or
+> debit card"* for some regions/IPs - despite the site advertising
+> "Registration without credit card". If you see that, **do not keep trying**;
+> go to **[`no-card.md`](no-card.md)** for routes that never ask for a card.
+> Everything below still applies if you got in.
 
 This is the **no-credit-card** path. alwaysdata's Free plan is advertised as
 "Registration without credit card", "Valid without time limit", 1 GB SSD,

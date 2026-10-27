@@ -1,10 +1,19 @@
-# Free 24/7 hosting with NO credit card (October 2026)
+# Free 24/7 hosting (October 2026)
 
-Render's free plan is **not** 24/7 (spins down after ~15 minutes idle), and
-several 2026 no-card projects report that Render now asks for a card on file
-even for the free tier. The app is host-agnostic now (relative URLs, `PORT`,
-Docker, three storage backends), so it can run anywhere. This file compares
-the options that need **no card** and gives copy-paste deployment steps.
+> 🛑 **START HERE IF YOU HAVE NO CARD:** both **Northflank** and **alwaysdata**
+> display *"To continue your registration and to prevent misuse, you must
+> validate a credit or debit card"* for many signups, especially from India,
+> despite advertising "no card needed". That is an anti-abuse verification
+> hold. **[Read `no-card.md`](no-card.md) instead** — it covers Render free +
+> a 5-minute pinger (uses your existing account), your own device + a free
+> tunnel, Serv00, and a Cloudflare Workers rewrite. None of those ask for a
+> card.
+
+Render's free plan is **not** 24/7 on its own (spins down after ~15 minutes
+idle), but a free 5-minute ping fixes that — see Route 1 in
+[`no-card.md`](no-card.md). The app is host-agnostic now (relative URLs,
+`PORT`, Docker, three storage backends), so it can run anywhere. No PR or
+merge is needed: every guide clones the working branch directly.
 
 > Prices and free tiers change constantly — verify on the provider's own
 > pricing page before signing up. All figures below were checked 2026-10-27.
@@ -20,12 +29,13 @@ the options that need **no card** and gives copy-paste deployment steps.
 | Oracle Cloud Always Free | Yes, forever | Yes | Yes, verification only | 12 GB / 200 GB | Card required — ruled out here |
 | Render free | Yes | **No** — sleeps | Sometimes | 512 MB / ephemeral | Cold starts, 750 instance-hours/month |
 
-**Recommended:** **alwaysdata + the Telegram backend** —
-[`alwaysdata.md`](alwaysdata.md) is the exact walkthrough, and
-[`alwaysdata.env.example`](alwaysdata.env.example) is the paste-ready env
-block. No card, no hardware, no sleep timer, no PR needed (clone the working
-branch directly). Storage1024 is **chat app as database**: the Telegram
-channel holds everything, so an ephemeral/limited disk is harmless.
+**Recommended (no card):** **Route 1 in `no-card.md`** — your existing Render
+account + a free UptimeRobot 5-minute monitor. Zero code changes, zero new
+accounts, effectively 24/7. If you got into alwaysdata without a card,
+[`alwaysdata.md`](alwaysdata.md) +
+[`alwaysdata.env.example`](alwaysdata.env.example) is the best dedicated host.
+Storage1024 is **chat app as database**: the Telegram channel holds
+everything, so an ephemeral/limited disk is harmless.
 
 The `github` backend is an optional fallback for people who no longer have
 their Telegram API credentials; it is not the main path.
@@ -50,7 +60,7 @@ auto-sleeps <https://zeabur.com/docs/en-US/pricing/free-plan>.
 
 ---
 
-## Option 1 — alwaysdata Free (no card, free for life, always-on)
+## Option 1 — alwaysdata Free (free for life, always-on — but may ask for a card)
 
 Free plan: no credit card, valid without time limit, 1 GB SSD, **256 MB RAM**,
 ¼ CPU, SSH (including a browser terminal), Python 3.11, ASGI via the
@@ -85,10 +95,9 @@ Northflank's official pricing page lists a free **Sandbox**: 2 services,
 2 jobs, 1 database, up to $20/month of resources, "Always on, no sleeping",
 "No card needed". <https://northflank.com/pricing>
 
-⚠️ Third-party trackers report that some regions are asked for a card
-**verification hold** at signup — not a charge, but still a card. If that
-happens, close the tab and use **Option 1**. If it lets you in without one,
-it's the better host (more RAM, Docker, custom domains).
+🛑 In practice many signups get the card verification wall. If that happens,
+close the tab and go to [`no-card.md`](no-card.md). If it lets you in without
+one, it's the better host (more RAM, Docker, custom domains).
 
 Deploy the root `Dockerfile` as a combined service on port 8000. Full
 walkthrough: **[`northflank.md`](northflank.md)** and
@@ -175,7 +184,9 @@ either deployment guide.
 
 ## Keep-alive / uptime
 
-None of the four no-card options sleep, so **no ping is required**. If you
+Route 1 (Render free) **requires** a 5-minute ping; the others do not sleep.
+See [`no-card.md`](no-card.md) and the 5-minute
+`.github/workflows/keep-alive.yml` / [`keepalive-worker.js`](keepalive-worker.js). If you
 still want a free uptime check, `.github/workflows/keep-alive.yml` hits
 `/api/health` every 10 minutes — set the `APP_URL` repository variable. GitHub
 disables scheduled workflows after 60 days of repo inactivity, so commit once
